@@ -6,10 +6,7 @@ import gym
 from gym import error, spaces, utils
 import glob
 from PIL import Image
-import open3d as o3d
-from .cl import *
 from skimage.morphology import binary_dilation
-from .proc3d import *
 import json
 from .utils import *
 import glob
@@ -67,7 +64,7 @@ class ScannerEnv(gym.Env):
 
         # theta and phi positions
         lowl = np.array([0,0])
-        highl = np.array([self.theta_n_positions-1], self.phi_n_positions-1])
+        highl = np.array([self.theta_n_positions-1, self.phi_n_positions-1])
         self.vec_ob_space = gym.spaces.Box(lowl, highl, dtype=np.int32)
 
         '''lowl = np.array([-1]*self.n_images)
