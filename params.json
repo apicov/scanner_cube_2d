@@ -1,6 +1,6 @@
 {
- "agent": { "decay_steps": 40000, 
-            "target_update_period": 1 , 
+ "agent": { "decay_steps": 8000, 
+            "target_update_period": 100 , 
             "gamma": 0.99},
 
  "rbuffer"   : {"max_length": 5000,
@@ -17,7 +17,7 @@
               "learning_rate" : 0.001
             },
             
- "misc" :  { "n_iterations" : 50000
+ "misc" :  { "n_iterations" : 10000
  		},
  		
 "categorical_dqn": { "n_atoms" :51,
