@@ -198,12 +198,13 @@ def plot_save_vol(file_n,vol):
     # displaying the plot
     #plt.show()
     plt.savefig(file_n)
+    plt.close(fig)
 
 
 
     
-parent_dir = "/home/pico/uni/romi/scanner-gym_models/"
-
+#parent_dir = "/home/pico/uni/romi/scanner-gym_models_v2/"
+parent_dir = "/home/pico/uni/romi/rl_sony/arabidopsis_image_sets/"
 plots_dir = "/home/pico/uni/romi/models_plots"
 if not os.path.exists(plots_dir):
         os.makedirs(plots_dir)
@@ -211,7 +212,7 @@ if not os.path.exists(plots_dir):
 
 #check what bbox file is used!!!
         
-for model in range(206,212):
+for model in range(0,1):
     data_path = os.path.join( parent_dir,str(model).zfill(3)+'_2d' )
     dest_dir = os.path.join(data_path,'ground_truth_volumes')
     if not os.path.exists(dest_dir):
@@ -227,6 +228,6 @@ for model in range(206,212):
         #h = np.histogram(spc.sc.values(), bins=3)[0]
     
         np.save(os.path.join(dest_dir,'vol_64x64x64_rot_' + str(bias).zfill(3) ), spc.volume)
-        plot_save_vol(os.path.join(plots_dir,str(model).zfill(3)+'_rot_' +  str(bias).zfill(3) ),spc.volume)
-        print("\r{}     ".format(model), end="")
+        plot_save_vol(os.path.join(plots_dir,str(model).zfill(3)+'_rot_' +  str(bias).zfill(3)+"b" ),spc.volume)
+        print("\r{} {}    ".format(model,bias), end="")
     #break

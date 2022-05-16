@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 
 
 # Parent Directory path 
-parent_dir = "/home/pico/uni/romi/scanner-gym_models"
-paths = ['206_2d','207_2d','208_2d','209_2d','210_2d','211_2d']
+parent_dir = "/home/pico/uni/romi/scanner-gym_models_v2"
+paths = ['206_2d','207_2d','208_2d','209_2d','210_2d','211_2d','212_2d','213_2d','214_2d']
 
 
 minmaxx = [1000,-1000]
