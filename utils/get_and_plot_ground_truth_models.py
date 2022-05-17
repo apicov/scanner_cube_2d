@@ -204,15 +204,17 @@ def plot_save_vol(file_n,vol):
 
     
 #parent_dir = "/home/pico/uni/romi/scanner-gym_models_v2/"
+#parent_dir = "/home/pico/uni/romi/rl_sony/arabidopsis_image_sets/"
 parent_dir = "/home/pico/uni/romi/rl_sony/arabidopsis_image_sets/"
 plots_dir = "/home/pico/uni/romi/models_plots"
+
 if not os.path.exists(plots_dir):
         os.makedirs(plots_dir)
 
 
 #check what bbox file is used!!!
         
-for model in range(0,1):
+for model in range(215,216):
     data_path = os.path.join( parent_dir,str(model).zfill(3)+'_2d' )
     dest_dir = os.path.join(data_path,'ground_truth_volumes')
     if not os.path.exists(dest_dir):
