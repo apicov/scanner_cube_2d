@@ -1,40 +1,39 @@
-import open3d as o3d
-import cl
-import utils as ut
-import numpy as np
-from skimage.morphology import binary_dilation
-import proc3d
-import json
-from utils import *
-import glob
-import os
-import csv
-from mpl_toolkits.mplot3d import Axes3D
-import matplotlib.pyplot as plt
-
-'''import open3d as o3d
-import cl
-import utils as ut
-import numpy as np
-from skimage.morphology import binary_dilation
-import proc3d
-import json
-from PIL import Image
-from utils import *
-import glob
-import os
 import cv2
-from scipy.ndimage.interpolation import rotate'''
+from scipy.ndimage import rotate
+import open3d as o3d
+from .cl import Backprojection
+#import cl
+import utils as ut
+import numpy as np
+from skimage.morphology import binary_dilation
+from .proc3d import *
+#import proc3d
+import json
+from PIL import Image, ImageOps
+from .utils import *
+import glob
+import os
 
-class space_carving_rotation_2d__():
-    def __init__(self, model_path, gt_mode=False, theta_bias=0, total_theta_positions=180):
+class space_carving_rotation_2d():
+    def __init__(self, model_path, gt_mode=False, theta_bias=0, total_theta_positions=180, cube_view='static'):
+        # if dynamic, perspective of the camera seeing the cube changes according to position
+        # if static, perspective is always the same
+        self.cube_view = cube_view
+        
         # theta position bias for simulating rotation of position of the object
         self.theta_bias = theta_bias
         
         # number of posible positions around the circle
         self.total_theta_positions = total_theta_positions
+
+        # to keep image taken in current position
+        #self.im = None
         
-        # get all .png file names from folder path
+        # get all .png file names of images from folder path
+        self.img_files = sorted (
+            glob.glob(os.path.join(model_path, 'imgs', '*.png')) )
+            
+        # get all .png file names of image masks from folder path
         self.masks_files = sorted(
             glob.glob(os.path.join(model_path, 'masks', '*.png')))
         
@@ -59,7 +58,8 @@ class space_carving_rotation_2d__():
         # uses ground truth model 
         if self.gt_mode is True:
             self.gt = np.load(os.path.join(
-                model_path, 'volumes', 'vol_64x64x64.npy'))
+                model_path, 'ground_truth_volumes', 'vol_64x64x64' + \
+                '_rot_'+ str(self.theta_bias).zfill(3) +'.npy'))
             self.gt_solid_mask = np.where(self.gt == 1, True, False)
             self.gt_n_solid_voxels = np.count_nonzero(self.gt_solid_mask)
 
@@ -80,7 +80,25 @@ class space_carving_rotation_2d__():
     def load_mask(self, idx):
         img = cv2.imread(self.masks_files[idx], cv2.IMREAD_GRAYSCALE)
         return img
+    
+    '''def load_image(self,idx):
+        img = Image.open(self.img_files[idx])
+        cp = img.copy()
+        img.close()
+        return cp'''
+    
+    def get_image(self, theta, phi):
+        biased_theta = self.calculate_theta_position(theta, -self.theta_bias)
+        image_idx = (self.total_theta_positions * phi) + biased_theta
+        
+        img = Image.open(self.img_files[image_idx])
+        cp = img.resize((84,84))
+        cp = ImageOps.grayscale(cp)
+        #cp = img.copy()
+        img.close()
+        return cp
 
+    
     def set_sc(self, bbox):
         x_min, x_max = bbox['x']
         y_min, y_max = bbox['y']
@@ -91,7 +109,7 @@ class space_carving_rotation_2d__():
         nz = int((z_max - z_min) / self.voxel_size) + 1
 
         self.origin = np.array([x_min, y_min, z_min])
-        self.sc = cl.Backprojection(
+        self.sc = Backprojection(
             [nx, ny, nz], [x_min, y_min, z_min], self.voxel_size)
         self.volume = self.sc.values()
 
@@ -106,13 +124,21 @@ class space_carving_rotation_2d__():
         extrinsics_idx = (self.total_theta_positions * phi) + theta
         
         im = self.load_mask(image_idx)
+        #im = self.load_image(image_idx)
         self.space_carve(im, self.extrinsics[extrinsics_idx])
 
         self.volume = self.sc.values()
+        
+        if self.cube_view == 'dynamic':
+            # rotate cube according to current camera position
+            #moves current position's perspective to cube position 0 so position 0
+            #in cube always shows current position's perspective
+            self.volume = rotate(self.volume,
+                            angle=-theta*(360//self.total_theta_positions),reshape=False)
 
     def space_carve(self, mask, rt):
         '''do space carving on mask with preset parameters'''
-        # mask = im.copy() #get_mask(im)
+        # mask = im.copy() #mask = get_mask(im)
         rot = sum(rt['R'], [])
         tvec = rt['T']
         if self.n_dilation:
@@ -160,76 +186,3 @@ class space_carving_rotation_2d__():
         elif n_pos < 0:
             n_pos += self.total_theta_positions
         return n_pos
-
-
-    
-def plot_save_vol(file_n,vol):
-    # importing required libraries
-    #from mpl_toolkits.mplot3d import Axes3D
-    #import matplotlib.pyplot as plt
-    
-    x,y,z = np.where(vol==1)
-
-    # creating figure
-    fig = plt.figure()
-    ax = Axes3D(fig)
-
-    ax.set_xlim3d(0, 64)
-    ax.set_ylim3d(0, 64)
-    ax.set_zlim3d(0, 64)
-
-    # creating the plot
-    ax.scatter(x, y, z, color='green',s=1)
-
-    # setting title and labels
-    ax.set_title("3D plot")
-    ax.set_xlabel('x-axis')
-    ax.set_ylabel('y-axis')
-    ax.set_zlabel('z-axis')
-    ax.grid()
-    
-    #make  0 origin coincide in all axis
-    ax.xaxis._axinfo['juggled'] = (0,0,0)
-    ax.yaxis._axinfo['juggled'] = (1,1,1)
-    ax.zaxis._axinfo['juggled'] = (2,2,2)
-    
-    #ax.view_init(90, 0)
-
-    # displaying the plot
-    #plt.show()
-    plt.savefig(file_n)
-    plt.close(fig)
-
-
-
-    
-parent_dir = "/home/pico/uni/romi/scanner-gym_models_v2/"
-#parent_dir = "/home/pico/uni/romi/rl_sony/arabidopsis_image_sets/"
-#parent_dir = "/home/pico/uni/romi/rl_sony/arabidopsis_image_sets/"
-plots_dir = "/home/pico/uni/romi/models_plots"
-
-if not os.path.exists(plots_dir):
-        os.makedirs(plots_dir)
-
-
-#check what bbox file is used!!!
-        
-for model in range(216,218):
-    data_path = os.path.join( parent_dir,str(model).zfill(3)+'_2d' )
-    dest_dir = os.path.join(data_path,'ground_truth_volumes')
-    if not os.path.exists(dest_dir):
-        os.makedirs(dest_dir)
-
-    print(dest_dir)
-
-    for bias in range(180):
-        spc = space_carving_rotation_2d__(data_path, theta_bias=bias)
-        for j in range(4):
-            for i in range(180):
-                spc.carve(i,j)
-        #h = np.histogram(spc.sc.values(), bins=3)[0]
-    
-        np.save(os.path.join(dest_dir,'vol_64x64x64_rot_' + str(bias).zfill(3) ), spc.volume)
-        plot_save_vol(os.path.join(plots_dir,str(model).zfill(3)+'_rot_' +  str(bias).zfill(3)+"b" ),spc.volume)
-        print("\r{} {}    ".format(model,bias), end="")
-    #break

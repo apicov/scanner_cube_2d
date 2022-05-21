@@ -75,13 +75,13 @@ def run_episode(env,tf_env,policy):
     return actions, images, env.theta_bias, rewards, env.total_reward , env.last_gt_ratio
 
 
-def test_policy(models_path, models, policy, n_images, n_episodes, dest_path ):
+def test_policy(environment, models_path, models, policy, n_images, n_episodes, dest_path ):
     data_template = {'actions':[],'images':[],'theta_biases':[],'rewards':[],'cum_rewards':[], 'gt_ratios':[], 'cum_reward_mean':0.0, 'cum_reward_std':0.0, 'gt_ratio_mean':0.0,'gt_ratio_std':0}
     collected_data = {}
 
     for p in models:
         #load environment with selected plant model
-        scan_env = suite_gym.load('ScannerEnv-v1',gym_kwargs={'models_path':models_path, 'train_models':[p],
+        scan_env = suite_gym.load(environment, gym_kwargs={'models_path':models_path, 'train_models':[p],
                                                    'n_images':n_images, 'continuous':False,
                                                    'gt_mode':True,'cube_view':'static'})
         
