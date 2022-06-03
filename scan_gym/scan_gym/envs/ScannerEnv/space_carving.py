@@ -57,14 +57,16 @@ class space_carving_rotation_2d():
 
         # uses ground truth model 
         if self.gt_mode is True:
-            self.gt = np.load(os.path.join(
-                model_path, 'ground_truth_volumes', 'vol_128x128x128' + \
-                '_rot_'+ str(self.theta_bias).zfill(3) +'.npy'))
             '''self.gt = np.load(os.path.join(
-                model_path, 'ground_truth_volumes', 'vol_64x64x64' + \
+                model_path, 'ground_truth_volumes', 'vol_128x128x128' + \
                 '_rot_'+ str(self.theta_bias).zfill(3) +'.npy'))'''
+            self.gt = np.load(os.path.join(
+                model_path, 'ground_truth_volumes', 'vol_64x64x64' + \
+                '_rot_'+ str(self.theta_bias).zfill(3) +'.npy'))
             self.gt_solid_mask = np.where(self.gt == 1, True, False)
             self.gt_n_solid_voxels = np.count_nonzero(self.gt_solid_mask)
+            gt_empty_v_mask = np.where(self.gt == -1, True, False)
+            self.gt_n_empty_voxels = np.count_nonzero(gt_empty_v_mask)
 
         self.set_sc(self.bbox)
 
@@ -137,7 +139,11 @@ class space_carving_rotation_2d():
             #moves current position's perspective to cube position 0 so position 0
             #in cube always shows current position's perspective
             self.volume = rotate(self.volume,
-                            angle=-theta*(360//self.total_theta_positions),reshape=False)
+                            angle=-theta*(360//self.total_theta_positions),
+                                 order=0,reshape=False,prefilter=False,axes=(1, 0))
+            self.volume = rotate(self.volume,
+                                 angle=-phi*(90//4),#self.total_phi_positions),
+                                 reshape=False, order=0, prefilter=False,axes=(2, 0))
 
     def space_carve(self, mask, rt):
         '''do space carving on mask with preset parameters'''
@@ -180,6 +186,14 @@ class space_carving_rotation_2d():
         ratio = n_intersection / \
             (self.gt_n_solid_voxels + vol_n_solid_voxels - n_intersection)
         return ratio
+
+    def gt_compare_empty_voxels(self):
+        if self.gt_mode is False:
+            return 0
+        
+        current_empty_voxel_count = np.count_nonzero(self.sc.values() == -1)
+        empty_ratio = current_empty_voxel_count /  self.gt_n_empty_voxels
+        return empty_ratio
 
     def calculate_theta_position(self, init_state, steps):
         '''calculates theta position (in steps) from current theta plus n steps'''

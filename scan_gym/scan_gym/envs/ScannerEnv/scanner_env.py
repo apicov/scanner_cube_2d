@@ -20,7 +20,7 @@ class ScannerEnv(gym.Env):
     Custom OpenAI Gym environment  for training 3d scannner
     """
     metadata = {'render.modes': ['human']}
-    def __init__(self,models_path,train_models,n_images = 10, continuous=False,gt_mode=True,cube_view='static'):
+    def __init__(self,models_path,train_models,n_images = 10, continuous=False,gt_mode=True,cube_view='dynamic'):
         super(ScannerEnv, self).__init__()
         #self.__version__ = "7.0.1"
         # if gt_mode true, ground truth model is used by space carving object (for comparing it against current volume)
@@ -42,6 +42,8 @@ class ScannerEnv(gym.Env):
         #for activating continuous action mode
         self.continuous = continuous
 
+        self.multi_in = False
+
         '''the state returned by this environment consiste of
         last three images,
         the volume being carved , theta position , phi position'''
@@ -50,7 +52,7 @@ class ScannerEnv(gym.Env):
         #self.img_obs_space = gym.spaces.Box(low=0, high=255, shape=self.images_shape, dtype=np.uint8)
         
         # volume used in the carving
-        self.volume_shape = (128,128,128)#(64,64,64)
+        self.volume_shape = (64,64,64) #(128,128,128)#(64,64,64) np.float16
         self.vol_obs_space = gym.spaces.Box(low=-1, high=1, shape=self.volume_shape, dtype=np.float16)
 
         '''# theta positions                                          
@@ -64,14 +66,14 @@ class ScannerEnv(gym.Env):
         self.phi_obs_space = gym.spaces.Box(p_low, p_high, dtype=np.int32)'''
 
         # theta and phi positions
-        #lowl = np.array([0,0])
-        #highl = np.array([self.theta_n_positions-1, self.phi_n_positions-1])
-        #self.vec_ob_space = gym.spaces.Box(lowl, highl, dtype=np.int32)
+        lowl = np.array([0,0])
+        highl = np.array([self.theta_n_positions-1, self.phi_n_positions-1])
+        self.vec_ob_space = gym.spaces.Box(lowl, highl, dtype=np.int32)
 
         # theta and phi positions
-        lowl = np.array([0]*6)
-        highl = np.array([self.theta_n_positions-1]*3 + [self.phi_n_positions-1]*3)
-        self.vec_ob_space = gym.spaces.Box(lowl, highl, dtype=np.int32)
+        #lowl = np.array([0]*6)
+        #highl = np.array([self.theta_n_positions-1]*3 + [self.phi_n_positions-1]*3)
+        #self.vec_ob_space = gym.spaces.Box(lowl, highl, dtype=np.int32)
 
         '''lowl = np.array([-1]*self.n_images)
         highl = np.array([179]*self.n_images)                                           
@@ -79,8 +81,13 @@ class ScannerEnv(gym.Env):
 
 
         #self.observation_space = gym.spaces.Tuple((self.img_obs_space, self.vol_obs_space, self.theta_obs_space, self.phi_obs_space))
-        self.observation_space = gym.spaces.Tuple((self.vol_obs_space,self.vec_ob_space))
+        #self.observation_space = gym.spaces.Tuple((self.vol_obs_space,self.vec_ob_space))
 
+        if self.multi_in:
+            self.observation_space = gym.spaces.Tuple((self.vol_obs_space,self.vec_ob_space))
+        else:
+            self.observation_space = self.vol_obs_space
+            #self.observation_space = self.vec_ob_space
 
         if self.continuous:
              self.action_space = spaces.Box(-1, +1, (2,), dtype=np.float32)     
@@ -104,18 +111,117 @@ class ScannerEnv(gym.Env):
                             107:(95,3),108:(100,3),109:(105,3),110:(110,3),111:(115,3),112:(120,3),113:(125,3),114:(130,3),115:(135,3)}'''
 
             
-            self.actions = {0:(2,0),1:(5,0),2:(10,0),3:(15,0),4:(25,0),5:(45,0),
+            '''self.actions = {0:(2,0),1:(5,0),2:(10,0),3:(15,0),4:(25,0),5:(45,0),
                             6:(2,1),7:(5,1),8:(10,1),9:(15,1),10:(25,1),11:(45,1),
                             12:(2,2),13:(5,2),14:(10,2),15:(15,2),16:(25,2),17:(45,2),
-                            18:(2,3),19:(5,3),20:(10,3),21:(15,3),22:(25,3),23:(45,3)}
+                            18:(2,3),19:(5,3),20:(10,3),21:(15,3),22:(25,3),23:(45,3)}'''
+
+
+            '''self.actions = {0:(2,0),1:(4,0),2:(6,0),3:(8,0),4:(10,0),5:(12,0),
+                            6:(14,0),7:(16,0),8:(18,0),9:(20,0),10:(22,0),11:(24,0),
+                            12:(26,0),13:(28,0),14:(30,0),15:(32,0),16:(34,0),17:(36,0),
+                            18:(38,0),19:(40,0),20:(42,0),21:(44,0),22:(46,0),23:(48,0),
+                            24:(1,0)}'''
+
+
+            '''self.actions = {0:(5,0),1:(10,0),2:(15,0),3:(20,0),4:(25,0),5:(30,0),
+                            6:(35,0),7:(40,0),8:(45,0)}'''
+   
+
+            '''self.actions = {0:(2,0),1:(4,0),2:(6,0),3:(8,0),4:(10,0),5:(12,0),
+                            6:(14,0),7:(16,0),8:(18,0),9:(20,0),10:(22,0),11:(24,0),
+                            12:(26,0),13:(28,0),14:(30,0),15:(32,0),16:(34,0),17:(36,0),
+                            18:(38,0),19:(40,0),20:(42,0),21:(44,0),22:(46,0),23:(48,0),
+                            24:(50,0),25:(52,0),26:(54,0),27:(56,0),28:(58,0),29:(60,0),
+                            30:(1,0)}'''
+
+
+            '''self.actions = {0:(2,0),1:(4,0),2:(6,0),3:(8,0),4:(10,0),5:(12,0),
+                            6:(14,0),7:(16,0),8:(18,0),9:(20,0),10:(22,0),11:(24,0),
+                            12:(26,0),13:(28,0),14:(30,0),15:(32,0),16:(34,0),17:(36,0),
+                            18:(1,0),
+                            19:(-2,0),20:(-4,0),21:(-6,0),22:(-8,0),23:(-10,0),24:(-12,0),
+                            25:(-14,0),26:(-16,0),27:(-18,0),28:(-20,0),29:(-22,0),30:(-24,0),
+                            31:(-26,0),32:(-28,0),33:(-30,0),34:(-32,0),35:(-34,0),36:(-36,0),
+                            37:(-1,0)}'''
+
+            '''self.actions = {0:(0,0),1:(1,0),2:(2,0),3:(3,0),4:(6,0),5:(11,0),
+                            6:(22,0),7:(45,0),8:(90,0),9:(-90,0),10:(-45,0),11:(-22,0),
+                            12:(-11,0),13:(-6,0),14:(-3,0),15:(-2,0),16:(-1,0)}'''
+            
+            '''self.actions = {0: (0, 0),
+                            1: (0, 3),
+                            2: (2, 0),
+                            3: (2, 3),
+                            4: (6, 0),
+                            5: (6, 3),
+                            6: (11, 0),
+                            7: (11, 3),
+                            8: (22, 0),
+                            9: (22, 3),
+                            10: (45, 0),
+                            11: (45, 3),
+                            12: (-45, 0),
+                            13: (-45, 3),
+                            14: (-22, 0),
+                            15: (-22, 3),
+                            16: (-11, 0),
+                            17: (-11, 3),
+                            18: (-6, 0),
+                            19: (-6, 3),
+                            20: (-3, 0),
+                            21: (-3, 3),
+                            22: (-2, 0),
+                            23: (-2, 3),
+                            24: (-1, 0),
+                            25: (-1, 3)}'''
+
+            
+            '''self.actions = {0 : (0,0), 1 : (0,1), 2 : (0,2), 3 : (0,3), 4 : (1,0), 
+                            5 : (1,1), 6 : (1,2), 7 : (1,3), 8 : (2,0), 9 : (2,1), 
+                            10 : (2,2), 11 : (2,3), 12 : (3,0), 13 : (3,1), 14 : (3,2), 
+                            15 : (3,3), 16 : (6,0), 17 : (6,1), 18 : (6,2), 19 : (6,3), 
+                            20 : (11,0), 21 : (11,1), 22 : (11,2), 23 : (11,3), 24 : (22,0), 
+                            25 : (22,1), 26 : (22,2), 27 : (22,3), 28 : (45,0), 29 : (45,1), 
+                            30 : (45,2), 31 : (45,3), 32 : (-45,0), 33 : (-45,1), 34 : (-45,2), 
+                            35 : (-45,3), 36 : (-22,0), 37 : (-22,1), 38 : (-22,2), 39 : (-22,3), 
+                            40 : (-11,0), 41 : (-11,1), 42 : (-11,2), 43 : (-11,3), 44 : (-6,0), 
+                            45 : (-6,1), 46 : (-6,2), 47 : (-6,3), 48 : (-3,0), 49 : (-3,1), 
+                            50 : (-3,2), 51 : (-3,3), 52 : (-2,0), 53 : (-2,1), 54 : (-2,2), 
+                            55 : (-2,3), 56 : (-1,0), 57 : (-1,1), 58 : (-1,2), 59 : (-1,3), 
+                            }'''
+
+            self.actions = {0 : (0,0), 1 : (0,1), 2 : (0,2), 3 : (0,3), 4 : (0,-3), 
+                            5 : (0,-2), 6 : (0,-1), 7 : (1,0), 8 : (1,1), 9 : (1,2), 
+                            10 : (1,3), 11 : (1,-3), 12 : (1,-2), 13 : (1,-1), 14 : (2,0), 
+                            15 : (2,1), 16 : (2,2), 17 : (2,3), 18 : (2,-3), 19 : (2,-2), 
+                            20 : (2,-1), 21 : (3,0), 22 : (3,1), 23 : (3,2), 24 : (3,3), 
+                            25 : (3,-3), 26 : (3,-2), 27 : (3,-1), 28 : (6,0), 29 : (6,1), 
+                            30 : (6,2), 31 : (6,3), 32 : (6,-3), 33 : (6,-2), 34 : (6,-1), 
+                            35 : (11,0), 36 : (11,1), 37 : (11,2), 38 : (11,3), 39 : (11,-3), 
+                            40 : (11,-2), 41 : (11,-1), 42 : (22,0), 43 : (22,1), 44 : (22,2), 
+                            45 : (22,3), 46 : (22,-3), 47 : (22,-2), 48 : (22,-1), 49 : (45,0), 
+                            50 : (45,1), 51 : (45,2), 52 : (45,3), 53 : (45,-3), 54 : (45,-2), 
+                            55 : (45,-1), 56 : (-45,0), 57 : (-45,1), 58 : (-45,2), 59 : (-45,3), 
+                            60 : (-45,-3), 61 : (-45,-2), 62 : (-45,-1), 63 : (-22,0), 64 : (-22,1), 
+                            65 : (-22,2), 66 : (-22,3), 67 : (-22,-3), 68 : (-22,-2), 69 : (-22,-1), 
+                            70 : (-11,0), 71 : (-11,1), 72 : (-11,2), 73 : (-11,3), 74 : (-11,-3), 
+                            75 : (-11,-2), 76 : (-11,-1), 77 : (-6,0), 78 : (-6,1), 79 : (-6,2), 
+                            80 : (-6,3), 81 : (-6,-3), 82 : (-6,-2), 83 : (-6,-1), 84 : (-3,0), 
+                            85 : (-3,1), 86 : (-3,2), 87 : (-3,3), 88 : (-3,-3), 89 : (-3,-2), 
+                            90 : (-3,-1), 91 : (-2,0), 92 : (-2,1), 93 : (-2,2), 94 : (-2,3), 
+                            95 : (-2,-3), 96 : (-2,-2), 97 : (-2,-1), 98 : (-1,0), 99 : (-1,1), 
+                            100 : (-1,2), 101 : (-1,3), 102 : (-1,-3), 103 : (-1,-2), 104 : (-1,-1), 
+                            }
 
             self.action_space = gym.spaces.Discrete(len(self.actions))
 
-       
+        self.zeros = np.zeros((64,64,64))
         #self._spec.id = "Romi-v0"
         self.reset()
 
-    def reset(self,theta_init=-1,phi_init=-1,theta_bias=-1):
+    def reset(self,theta_init=-1,phi_init=-1,theta_bias=0):
+        self.gano = False
         self.num_steps = 0
         self.total_reward = 0
         self.done = False
@@ -126,11 +232,6 @@ class ScannerEnv(gym.Env):
 
         # keep track of visited positions during the episode
         self.visited_positions = [] 
-
-        # count of empty,undetermined and solid voxels in volume
-        # -1's (empty space), 0's (undetermined) and 1's (solid) from 3d volume
-        self.voxel_count = [0,0,0]
-        self.last_voxel_count = [0,0,0] #last count of empty spaces (when not in gt mode)
 
         #inital position of the camera, if -1 choose random
         self.init_theta = theta_init
@@ -165,11 +266,16 @@ class ScannerEnv(gym.Env):
         self.spc = space_carving_rotation_2d( os.path.join(self.models_path, model),
                         gt_mode=self.gt_mode, theta_bias=self.theta_bias,
                         total_theta_positions=self.theta_n_positions,
-                        cube_view='static')
+                        cube_view=self.cube_view)
 
         # carve image from initial position
         self.spc.carve(self.current_theta, self.current_phi)
         vol = self.spc.volume
+
+        # count of empty,undetermined and solid voxels in volume
+        # -1's (empty space), 0's (undetermined) and 1's (solid) from 3d volume
+        #last count of empty spaces
+        #self.last_empty_voxel_count =  np.count_nonzero(vol == -1) 
 
         # get camera image
         #im = np.array(self.spc.get_image(self.current_theta, self.current_phi))
@@ -188,7 +294,7 @@ class ScannerEnv(gym.Env):
         
         
 
-        if self.gt_mode is True:
+        '''if self.gt_mode is True:
             # keep similarity ratio of current volume and groundtruth volume
             # for calculating deltas of similarity ratios in next steps
             self.last_gt_ratio = self.spc.gt_compare_solid()
@@ -197,8 +303,12 @@ class ScannerEnv(gym.Env):
             self.voxel_count = [np.count_nonzero(vol == -1),
                                 np.count_nonzero(vol == 0),
                                 np.count_nonzero(vol == 1) ] 
-            self.last_voxel_count = self.voxel_count.copy() 
-        
+            self.last_voxel_count = self.voxel_count.copy() '''
+
+
+
+
+            
         '''self.current_state = (self.im3,
                               vol.astype('float16') ,
                               np.array([self.current_theta],dtype=int),
@@ -206,10 +316,19 @@ class ScannerEnv(gym.Env):
 
         #self.current_state = ( vol.astype('float16'), np.array([self.current_theta, self.current_phi],dtype=int))
 
-        self.current_state = ( vol.astype('float16'), np.array(theta_state+phi_state,dtype=int))
+        #self.current_state = ( vol.astype('float16'), np.array(theta_state+phi_state,dtype=int))
 
-        return self.current_state
+        if self.multi_in:
+            self.current_state = ( vol.astype('float16'), np.array([self.current_theta, self.current_phi],dtype=int))
+        else:
+            self.current_state =  vol.astype('float16') #self.zeros #vol.astype('float16')
 
+
+            #self.current_state =  np.array([self.current_theta, self.current_phi],dtype=int)
+            #self.current_state =  np.array([0,0],dtype=int)
+            #self.current_state =  np.array(theta_state+phi_state,dtype=int)
+
+        return self.current_state 
 
   
 
@@ -230,7 +349,8 @@ class ScannerEnv(gym.Env):
             
         #move n theta steps from current theta position
         self.current_theta = self.calculate_theta_position(self.current_theta, theta)
-        # phi indicates absolute position
+        # move phi
+        phi +=  self.current_phi
         #check phi limits
         if phi < 0:
             phi = 0
@@ -245,6 +365,9 @@ class ScannerEnv(gym.Env):
         #carve in new position
         self.spc.carve(self.current_theta, self.current_phi)
         vol = self.spc.volume
+
+        #count empty voxels of current volume
+        #self.current_empty_voxel_count = np.count_nonzero(vol == -1) 
 
         # get camera image
         #im = np.array(self.spc.get_image(self.current_theta, self.current_phi))
@@ -263,7 +386,33 @@ class ScannerEnv(gym.Env):
         else:
             theta_state = self.theta_history[-3:]
             phi_state = self.phi_history[-3:]
+
+
+
+        #delta_empty_voxels = self.current_empty_voxel_count - self.last_empty_voxel_count
+        #self.last_empty_voxel_count = self.current_empty_voxel_count
+        #reward = (delta_empty_voxels / self.spc.gt_n_empty_voxels) * self.num_steps
+
+        #reward =  (self.current_empty_voxel_count / self.spc.gt_n_empty_voxels)#/self.n_images
+
+
+        '''p_list = [0,50,34,2,49,3,11,14,15,150]
+        if self.current_theta == p_list[self.num_steps]:
+            reward = .111111111
+        else:
+            reward = 0.0'''
+
+        '''dist = np.abs(self.current_theta-42)
+        if dist == 0 and self.gano==False:
+            reward = 5
+            self.gano=True
+        else:
+            reward = self.minMaxNorm(dist, 0, 179 , 1 , 0)'''
         
+        #if self.num_steps > 4:
+        #    reward *= self.num_steps
+        reward = 0
+        '''
         if self.gt_mode is True:
             #calculate increment of solid voxels ratios between gt and current volume
             gt_ratio = self.spc.gt_compare_solid()
@@ -278,16 +427,17 @@ class ScannerEnv(gym.Env):
                                 np.count_nonzero(vol == 1) ] 
             #np.histogram(self.spc.sc.values(), bins=3)[0]
 
-            ''' do some calculation with the voxel count'''
-            '''#calculate increment of detected spaces since last carving
-            delta = self.h[0] - self.last_vspaces_count
-            reward = min(delta,30000) / 30000'''
+           # do some calculation with the voxel count
+            #calculate increment of detected spaces since last carving
+            #delta = self.h[0] - self.last_vspaces_count
+            #reward = min(delta,30000) / 30000
             reward=0
-
             self.last_voxel_count = self.voxel_count.copy() 
-        
+        '''
+
 
         if self.num_steps >= (self.n_images-1):
+            reward =  self.spc.gt_compare_empty_voxels()
             self.done = True
            
         self.total_reward += reward
@@ -300,7 +450,14 @@ class ScannerEnv(gym.Env):
 
         #self.current_state = ( vol.astype('float16'), np.array([self.current_theta, self.current_phi],dtype=int))
 
-        self.current_state = ( vol.astype('float16'), np.array(theta_state+phi_state,dtype=int))
+        #self.current_state = ( vol.astype('float16'), np.array(theta_state+phi_state,dtype=int))
+        if self.multi_in:
+            self.current_state = ( vol.astype('float16'), np.array([self.current_theta, self.current_phi],dtype=int))
+        else:
+            self.current_state = vol.astype('float16')   #self.zeros #vol.astype('float16')
+            #self.current_state =  np.array([self.current_theta, self.current_phi],dtype=int)
+            #self.current_state =  np.array([0,0],dtype=int)
+            #self.current_state =  np.array(theta_state+phi_state,dtype=int)
 
         return self.current_state, reward, self.done, {}
 

@@ -72,7 +72,7 @@ def run_episode(env,tf_env,policy):
         rewards.append(float(state.reward.numpy()[0]))
         if state.is_last():
             break
-    return actions, images, env.theta_bias, rewards, env.total_reward , env.last_gt_ratio
+    return actions, images, env.theta_bias, rewards, env.total_reward , env.spc.gt_compare_solid()
 
 
 def test_policy(environment, models_path, models, policy, n_images, n_episodes, dest_path ):

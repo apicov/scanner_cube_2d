@@ -1,15 +1,15 @@
 {
- "agent": { "decay_steps": 16000, 
+ "agent": { "decay_steps": 950000, 
             "target_update_period": 100 , 
             "gamma": 0.99},
 
- "rbuffer"   : {"max_length": 4000,
-                "sample_batch_size" : 32},
+ "rbuffer"   : {"max_length": 60000,
+                "sample_batch_size" : 64},
 
- "rnd_policy" : {   "num_steps": 3000 },
+ "rnd_policy" : {   "num_steps": 5000 },
  
 
- "collect_driver" : { "num_steps" : 5},
+ "collect_driver" : { "num_steps" : 1},
 
 
  "model"  : { "conv2d_1_filters": 0,
@@ -17,10 +17,10 @@
               "learning_rate" : 0.001
             },
             
- "misc" :  { "n_iterations" : 20000
+ "misc" :  { "n_iterations" : 1000000
  		},
- 		
-"categorical_dqn": { "n_atoms" :51,
+ 	
+    "categorical_dqn": { "n_atoms": 51,
 			"min_q_value": 0,
 			"max_q_value" : 1,
 			"n_step_update" : 3

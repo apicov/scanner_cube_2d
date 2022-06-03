@@ -11,10 +11,11 @@ import os
 import copy
 import time
 
+TOTAL_THETA = 180
 
 
 def calculate_position(init_state,steps):
-    n_positions = 180
+    n_positions = TOTAL_THETA
     n_pos = init_state + steps
     if n_pos>(n_positions-1):
         n_pos -= n_positions
@@ -34,11 +35,11 @@ def test_rnd_policy(models_path, model, n_images, init_position, theta_bias):
         if done:
             break
 
-    return scan_env.total_reward, scan_env.last_gt_ratio
+    return scan_env.total_reward, scan_env.spc.gt_compare_solid()
 
 
 def test_uniform(models_path,model,n_images, init_theta):
-    total_theta_positions = 180
+    total_theta_positions = TOTAL_THETA
     spc = space_carving.space_carving_rotation_2d( os.path.join(models_path, model),
                         gt_mode=True, theta_bias=0,
                         total_theta_positions=total_theta_positions,
@@ -55,19 +56,20 @@ def test_uniform(models_path,model,n_images, init_theta):
 
 
 
-models_path  = '/home/pico/uni/romi/scanner-gym_models'
-models = ['206_2d','207_2d','208_2d','209_2d','210_2d','211_2d']
-n_images = 8
+models_path  = '/home/pico/uni/romi/scanner-gym_models_v2'
+models = ['206_2d','207_2d','208_2d','209_2d','210_2d','211_2d','212_2d','213_2d','214_2d','215_2d','216_2d', '217_2d','218_2d']
+#models = ['216_2d']
+n_images = 10
 
 
 # generate set of random initial positions and position biases for using in all tests
-seed = 42
+seed = 43
 np.random.seed(seed)
 n_init_positions = 180
-theta_phi_posbias = np.random.randint((0,0,0),(180,4,180),(n_init_positions,3))
+theta_phi_posbias = np.random.randint((0,0,0),(TOTAL_THETA,1,1),(n_init_positions,3))
 
 
-f = open("uni_rnd_policy_runs_08.json",'w')
+f = open("uni_rnd_policy_runs_10_v2.json",'w')
 
 
 data ={}
@@ -106,7 +108,8 @@ for m in models:
     
     
     #collect data uniform distribution policy
-    for i in range(180):
+    steps = TOTAL_THETA//n_images
+    for i in range(steps):
         time1 = time.time()
         gt_dist = test_uniform(models_path, m, n_images, i)
         m_data['uni']['gt_dists'].append(gt_dist)

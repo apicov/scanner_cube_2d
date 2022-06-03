@@ -202,7 +202,7 @@ def plot_save_vol(file_n,vol):
 
 
 
-    
+n_theta = 180
 parent_dir = "/home/pico/uni/romi/scanner-gym_models_v2/"
 #parent_dir = "/home/pico/uni/romi/rl_sony/arabidopsis_image_sets/"
 #parent_dir = "/home/pico/uni/romi/rl_sony/arabidopsis_image_sets/"
@@ -213,8 +213,8 @@ if not os.path.exists(plots_dir):
 
 
 #check what bbox file is used!!!
-        
-for model in range(216,218):
+   
+for model in range(218,219):
     data_path = os.path.join( parent_dir,str(model).zfill(3)+'_2d' )
     dest_dir = os.path.join(data_path,'ground_truth_volumes')
     if not os.path.exists(dest_dir):
@@ -222,10 +222,10 @@ for model in range(216,218):
 
     print(dest_dir)
 
-    for bias in range(180):
-        spc = space_carving_rotation_2d__(data_path, theta_bias=bias)
+    for bias in range(n_theta):
+        spc = space_carving_rotation_2d__(data_path, theta_bias=bias,total_theta_positions=n_theta)
         for j in range(4):
-            for i in range(180):
+            for i in range(n_theta):
                 spc.carve(i,j)
         #h = np.histogram(spc.sc.values(), bins=3)[0]
     
