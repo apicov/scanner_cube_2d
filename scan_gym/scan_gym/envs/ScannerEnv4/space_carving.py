@@ -65,6 +65,8 @@ class space_carving_rotation_2d():
                 '_rot_'+ str(self.theta_bias).zfill(3) +'.npy'))'''
             self.gt_solid_mask = np.where(self.gt == 1, True, False)
             self.gt_n_solid_voxels = np.count_nonzero(self.gt_solid_mask)
+            gt_empty_v_mask = np.where(self.gt == -1, True, False)
+            self.gt_n_empty_voxels = np.count_nonzero(gt_empty_v_mask)
 
         self.set_sc(self.bbox)
 
