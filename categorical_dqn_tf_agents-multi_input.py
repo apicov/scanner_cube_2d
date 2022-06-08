@@ -97,13 +97,13 @@ shutil.copyfile(src, dst)
 # In[3]:
 
 
-models_path  = '/home/pico/uni/romi/scanner-gym_models_v2'
+models_path  = '/home/pico/uni/romi/scanner-gym_models_v3'
 #models = ['207_2d','208_2d','209_2d','210_2d','211_2d']
 '''train_models = ['207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d']'''
-train_models =  ['206_2d','207_2d','208_2d','209_2d', '210_2d',
-               '211_2d','212_2d','213_2d' ,'214_2d']
-n_images = 10
+#train_models = ['208_2d','209_2d', '212_2d','213_2d','217_2d','218_2d']
+train_models = ['213_2d']
+n_images = 20
 continuous = False
 
 #scan_env = gym.make('ScannerEnv-v1', models_path=models_path, train_models=models,
@@ -179,7 +179,7 @@ def volume_layers():
    
     x = keras.layers.Flatten()(x)
     #x = keras.layers.GlobalAveragePooling3D()(x)
-    
+  
     #x = keras.layers.Dense(32)(x)
                                         
     model = keras.models.Model(inputs=input_vol,outputs=x)
@@ -439,10 +439,10 @@ tf_policy_saver.save(policy_dir)
 
 
 # test learned policy
-test_models = ['206_2d','207_2d','208_2d','209_2d', '210_2d',
+'''test_models = ['206_2d','207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d' ,'215_2d',
-               '216_2d','217_2d','218_2d']
-#test_models = ['206_2d']
+               '216_2d','217_2d','218_2d']'''
+test_models = ['213_2d']
 test_data = os.path.join(data_log_path,"tests", run_label+'.json')
 policy_test.test_policy(environment='ScannerEnv-v1', models_path=models_path,
                         models=test_models, policy=agent.policy,
