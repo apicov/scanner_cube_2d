@@ -66,7 +66,7 @@ from scan_gym import envs
 #imp.reload(envs)
 import csv
 
-seed=42
+seed=10
 tf.random.set_seed(seed)
 np.random.seed(seed)
 
@@ -109,7 +109,7 @@ continuous = False
 #scan_env = gym.make('ScannerEnv-v1', models_path=models_path, train_models=models,
 #                   n_images = n_images, continuous=continuous, gt_mode=True, cube_view='static')
 
-env = suite_gym.load('ScannerEnv-v1',gym_kwargs={'models_path':models_path, 'train_models':train_models,
+env = suite_gym.load('ScannerEnv-v2',gym_kwargs={'models_path':models_path, 'train_models':train_models,
                                                    'n_images':n_images, 'continuous':continuous,
                                                    'gt_mode':True,'cube_view':'dynamic'}) 
 
@@ -130,47 +130,24 @@ tf_env.action_spec()
 # In[6]:
 
 
-'''def volume_layers():
-    input_vol = keras.layers.Input(shape=(66,68,152))
-    preprocessing = keras.layers.Reshape((66,68,152,1))(input_vol)
-    preprocessing = keras.layers.Cropping3D(cropping=((0,2), (0,4), (0,24)))(preprocessing) #output none,64,64,128
-    preprocessing = keras.layers.Lambda(lambda x: (tf.cast(x,np.float32)+1.) / 2.)(preprocessing) #normalize 0-1
-    
-    
-    x = keras.layers.Conv3D(filters=32, kernel_size=3,strides=1, padding="same", activation="relu")(preprocessing)
-    x = keras.layers.Conv3D(filters=16, kernel_size=1,strides=1, padding="same", activation="relu")(x)
-    x = keras.layers.Conv3D(filters=64, kernel_size=3,strides=2,padding="same", activation="relu")(x)
-    #x = keras.layers.MaxPool3D(pool_size=2)(x)
-    #x = keras.layers.BatchNormalization()(x)
-   
-    #x = keras.layers.Flatten()(x)
-    x = keras.layers.GlobalAveragePooling3D()(x)
-    
-    #x = keras.layers.Dense(32)(x)
-                                        
-    model = keras.models.Model(inputs=input_vol,outputs=x)
-    model.summary()
-    return model'''
-
-def volume_layers():
-    input_vol = keras.layers.Input(shape=(64,64,64))
-    preprocessing = keras.layers.Reshape((64,64,64,1))(input_vol)
+def image_layers():
+    input_im = keras.layers.Input(shape=(84,84,3))
+    preprocessing = keras.layers.Reshape((84,84,3,1))(input_im)
     #input_vol = keras.layers.Input(shape=(128,128,128))
     #preprocessing = keras.layers.Reshape((128,128,128,1))(input_vol)
-    #preprocessing = keras.layers.Lambda(lambda x: (tf.cast(x,np.float32)+1.) / 2.)(preprocessing) #normalize 0-1
-    preprocessing = keras.layers.Lambda(lambda x: (tf.cast(x,np.float32)+1.) / 2.)(preprocessing) #normalize 0-1
+    preprocessing = keras.layers.Lambda(lambda x: (tf.cast(x,np.float32) / 255))(preprocessing) #normalize 0-1
     
     stride = 2
     
-    x = keras.layers.Conv3D(filters=16, kernel_size=3,strides=stride, padding="same", activation="relu")(preprocessing)
+    x = keras.layers.Conv2D(filters=16, kernel_size=3,strides=stride, padding="same", activation="relu")(preprocessing)
     #x = keras.layers.MaxPool3D(pool_size=2)(x)
     #x = keras.layers.BatchNormalization()(x)
     
-    x = keras.layers.Conv3D(filters=32, kernel_size=3,strides=stride, padding="same", activation="relu")(x)
+    x = keras.layers.Conv2D(filters=32, kernel_size=3,strides=stride, padding="same", activation="relu")(x)
     #x = keras.layers.MaxPool3D(pool_size=2)(x)
     #x = keras.layers.BatchNormalization()(x)
 
-    x = keras.layers.Conv3D(filters=64, kernel_size=3,strides=stride,padding="same", activation="relu")(x)
+    x = keras.layers.Conv2D(filters=64, kernel_size=3,strides=stride,padding="same", activation="relu")(x)
     #x = keras.layers.MaxPool3D(pool_size=2)(x)
     #x = keras.layers.BatchNormalization()(x)
     
@@ -182,7 +159,7 @@ def volume_layers():
   
     #x = keras.layers.Dense(32)(x)
                                         
-    model = keras.models.Model(inputs=input_vol,outputs=x)
+    model = keras.models.Model(inputs=input_im,outputs=x)
     model.summary()
     return model
     
@@ -191,11 +168,11 @@ def volume_layers():
 #oldmin = tf_env.observation_spec()[1].minimum
 #oldmax = tf_env.observation_spec()[1].maximum
 
-oldmin = tf_env.observation_spec().minimum
-oldmax = tf_env.observation_spec().maximum
+#oldmin = tf_env.observation_spec().minimum
+#oldmax = tf_env.observation_spec().maximum
 
 
-print(oldmin,oldmax)
+#print(oldmin,oldmax)
     
 def input_vect_layers():
     input_ = keras.layers.Input(shape=(2,))
@@ -208,7 +185,7 @@ def input_vect_layers():
 
 
 #network
-preprocessing_layers=volume_layers()
+preprocessing_layers=image_layers()
 #preprocessing_layers=(volume_layers(),input_vect_layers())
 #preprocessing_layers=input_vect_layers()
 
@@ -400,7 +377,7 @@ def train_agent(n_iterations):
         if iteration % 5000 == 0:
           test_models = ['213_2d__']
           test_data = os.path.join(data_log_path,"tests", run_label+'.json')
-          policy_test.test_policy(environment='ScannerEnv-v1', models_path=models_path,
+          policy_test.test_policy(environment='ScannerEnv-v2', models_path=models_path,
                                   models=test_models, policy=agent.policy,
                                   n_images=n_images, n_episodes = 50, dest_path=test_data )
 
@@ -451,7 +428,7 @@ tf_policy_saver.save(policy_dir)
                '216_2d','217_2d','218_2d']'''
 test_models = ['213_2d__']
 test_data = os.path.join(data_log_path,"tests", run_label+'.json')
-policy_test.test_policy(environment='ScannerEnv-v1', models_path=models_path,
+policy_test.test_policy(environment='ScannerEnv-v2', models_path=models_path,
                         models=test_models, policy=agent.policy,
                         n_images=n_images, n_episodes = 180, dest_path=test_data )
 

@@ -37,6 +37,9 @@ class ScannerEnv(gym.Env):
         # if static, figure in cube is always seen from the same perspective
         #if dynamic, position figure in cube rotates according to the camera perspective
         self.cube_view = cube_view
+
+        # keep empty spaces measurements
+        self.es_similarity = []
         
 
         #for activating continuous action mode
@@ -191,7 +194,7 @@ class ScannerEnv(gym.Env):
                             55 : (-2,3), 56 : (-1,0), 57 : (-1,1), 58 : (-1,2), 59 : (-1,3), 
                             }'''
 
-            '''self.actions = {0 : (0,0), 1 : (0,1), 2 : (0,2), 3 : (0,3), 4 : (0,-3), 
+            self.actions = {0 : (0,0), 1 : (0,1), 2 : (0,2), 3 : (0,3), 4 : (0,-3), 
                             5 : (0,-2), 6 : (0,-1), 7 : (1,0), 8 : (1,1), 9 : (1,2), 
                             10 : (1,3), 11 : (1,-3), 12 : (1,-2), 13 : (1,-1), 14 : (2,0), 
                             15 : (2,1), 16 : (2,2), 17 : (2,3), 18 : (2,-3), 19 : (2,-2), 
@@ -212,10 +215,10 @@ class ScannerEnv(gym.Env):
                             90 : (-3,-1), 91 : (-2,0), 92 : (-2,1), 93 : (-2,2), 94 : (-2,3), 
                             95 : (-2,-3), 96 : (-2,-2), 97 : (-2,-1), 98 : (-1,0), 99 : (-1,1), 
                             100 : (-1,2), 101 : (-1,3), 102 : (-1,-3), 103 : (-1,-2), 104 : (-1,-1),
-                            }'''
+                            }
 
 
-            self.actions = {0 : (-45,-3), 1 : (-45,-2), 2 : (-45,-1), 3 : (-45,0), 4 : (-45,1), 
+            '''self.actions = {0 : (-45,-3), 1 : (-45,-2), 2 : (-45,-1), 3 : (-45,0), 4 : (-45,1), 
                             5 : (-45,2), 6 : (-45,3), 7 : (-40,-3), 8 : (-40,-2), 9 : (-40,-1), 
                             10 : (-40,0), 11 : (-40,1), 12 : (-40,2), 13 : (-40,3), 14 : (-35,-3), 
                             15 : (-35,-2), 16 : (-35,-1), 17 : (-35,0), 18 : (-35,1), 19 : (-35,2), 
@@ -244,7 +247,7 @@ class ScannerEnv(gym.Env):
                             130 : (35,1), 131 : (35,2), 132 : (35,3), 133 : (40,-3), 134 : (40,-2), 
                             135 : (40,-1), 136 : (40,0), 137 : (40,1), 138 : (40,2), 139 : (40,3), 
                             140 : (45,-3), 141 : (45,-2), 142 : (45,-1), 143 : (45,0), 144 : (45,1), 
-                            145 : (45,2), 146 : (45,3) }
+                            145 : (45,2), 146 : (45,3) }'''
 
             self.action_space = gym.spaces.Discrete(len(self.actions))
 
@@ -307,7 +310,8 @@ class ScannerEnv(gym.Env):
         # count of empty,undetermined and solid voxels in volume
         # -1's (empty space), 0's (undetermined) and 1's (solid) from 3d volume
         #last count of empty spaces
-        #self.last_empty_voxel_count =  np.count_nonzero(vol == -1) 
+        #self.last_empty_voxel_count =  np.count_nonzero(vol == -1)
+        self.es_similarity.append( self.spc.gt_compare_empty_voxels())
 
         # get camera image
         #im = np.array(self.spc.get_image(self.current_theta, self.current_phi))
@@ -352,7 +356,7 @@ class ScannerEnv(gym.Env):
         if self.multi_in:
             self.current_state = ( vol.astype('float16'), np.array([self.current_theta, self.current_phi],dtype=int))
         else:
-            self.current_state =self.zeros  #self.zeros #vol.astype('float16')
+            self.current_state =vol.astype('float16')  #self.zeros #vol.astype('float16')
 
 
             #self.current_state =  np.array([self.current_theta, self.current_phi],dtype=int)
@@ -425,7 +429,9 @@ class ScannerEnv(gym.Env):
         #reward = (delta_empty_voxels / self.spc.gt_n_empty_voxels) * self.num_steps
 
         #reward =  (self.current_empty_voxel_count / self.spc.gt_n_empty_voxels)#/self.n_images
+        self.es_similarity.append( self.spc.gt_compare_empty_voxels())
 
+        reward = 0 #  self.es_similarity[-1] - self.es_similarity[-2]
 
         '''p_list = [0,50,34,2,49,3,11,14,15,150]
         if self.current_theta == p_list[self.num_steps]:
@@ -442,7 +448,7 @@ class ScannerEnv(gym.Env):
         
         #if self.num_steps > 4:
         #    reward *= self.num_steps
-        reward = 0
+        #reward = 0
         '''
         if self.gt_mode is True:
             #calculate increment of solid voxels ratios between gt and current volume
@@ -468,7 +474,8 @@ class ScannerEnv(gym.Env):
 
 
         if self.num_steps >= (self.n_images-1):
-            reward =  self.spc.gt_compare_empty_voxels()
+            #reward =  self.spc.gt_compare_empty_voxels()
+            reward = self.es_similarity[-1] - self.es_similarity[6]
             self.done = True
            
         self.total_reward += reward
@@ -485,7 +492,7 @@ class ScannerEnv(gym.Env):
         if self.multi_in:
             self.current_state = ( vol.astype('float16'), np.array([self.current_theta, self.current_phi],dtype=int))
         else:
-            self.current_state = self.zeros   #self.zeros #vol.astype('float16')
+            self.current_state = vol.astype('float16')   #self.zeros #vol.astype('float16')
             #self.current_state =  np.array([self.current_theta, self.current_phi],dtype=int)
             #self.current_state =  np.array([0,0],dtype=int)
             #self.current_state =  np.array(theta_state+phi_state,dtype=int)
