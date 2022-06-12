@@ -83,7 +83,7 @@ def test_policy(environment, models_path, models, policy, n_images, n_episodes, 
         #load environment with selected plant model
         scan_env = suite_gym.load(environment, gym_kwargs={'models_path':models_path, 'train_models':[p],
                                                    'n_images':n_images, 'continuous':False,
-                                                           'gt_mode':True,'cube_view':'dynamic'})
+                                                           'gt_mode':True,'cube_view':'static'})
         
         tf_env = tf_py_environment.TFPyEnvironment( scan_env )
         

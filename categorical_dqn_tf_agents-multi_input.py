@@ -50,6 +50,7 @@ from tf_agents.policies.random_tf_policy import RandomTFPolicy
 from tf_agents.utils.common import function, element_wise_squared_loss
 from tf_agents.eval.metric_utils import log_metrics
 from tf_agents.policies import policy_saver
+from tf_agents.networks import network
 import logging
 
 import tensorflow.keras as keras
@@ -97,13 +98,13 @@ shutil.copyfile(src, dst)
 # In[3]:
 
 
-models_path  = '/home/pico/uni/romi/scanner-gym_models_v3'
+models_path  = '/home/pico/uni/romi/scanner-gym_models_v2'
 #models = ['207_2d','208_2d','209_2d','210_2d','211_2d']
 '''train_models = ['207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d']'''
 #train_models = ['208_2d','209_2d', '212_2d','213_2d','217_2d','218_2d']
-train_models = ['213_2d__']
-n_images = 20
+train_models = ['209_2d']
+n_images = 10
 continuous = False
 
 #scan_env = gym.make('ScannerEnv-v1', models_path=models_path, train_models=models,
@@ -129,29 +130,7 @@ tf_env.action_spec()
 
 # In[6]:
 
-
-'''def volume_layers():
-    input_vol = keras.layers.Input(shape=(66,68,152))
-    preprocessing = keras.layers.Reshape((66,68,152,1))(input_vol)
-    preprocessing = keras.layers.Cropping3D(cropping=((0,2), (0,4), (0,24)))(preprocessing) #output none,64,64,128
-    preprocessing = keras.layers.Lambda(lambda x: (tf.cast(x,np.float32)+1.) / 2.)(preprocessing) #normalize 0-1
-    
-    
-    x = keras.layers.Conv3D(filters=32, kernel_size=3,strides=1, padding="same", activation="relu")(preprocessing)
-    x = keras.layers.Conv3D(filters=16, kernel_size=1,strides=1, padding="same", activation="relu")(x)
-    x = keras.layers.Conv3D(filters=64, kernel_size=3,strides=2,padding="same", activation="relu")(x)
-    #x = keras.layers.MaxPool3D(pool_size=2)(x)
-    #x = keras.layers.BatchNormalization()(x)
-   
-    #x = keras.layers.Flatten()(x)
-    x = keras.layers.GlobalAveragePooling3D()(x)
-    
-    #x = keras.layers.Dense(32)(x)
-                                        
-    model = keras.models.Model(inputs=input_vol,outputs=x)
-    model.summary()
-    return model'''
-
+     
 def volume_layers():
     input_vol = keras.layers.Input(shape=(64,64,64))
     preprocessing = keras.layers.Reshape((64,64,64,1))(input_vol)
@@ -195,23 +174,40 @@ oldmin = tf_env.observation_spec().minimum
 oldmax = tf_env.observation_spec().maximum
 
 
+
 print(oldmin,oldmax)
     
 def input_vect_layers():
-    input_ = keras.layers.Input(shape=(2,))
-    preprocessing = keras.layers.Lambda(lambda x: ((x-oldmin)*(1.- 0.)/(oldmax-oldmin)) + 0. )(input_)
-    #x = keras.layers.Dense(32)(preprocessing)
-    return keras.models.Model(inputs=input_,outputs=preprocessing)
+    preprocessing = keras.layers.Lambda(lambda x: ((x-oldmin)*(1.- 0.)/(oldmax-oldmin)) + 0. )
+    x = keras.layers.Dense(32)(preprocessing)
+    return keras.models.Model(inputs=input_,outputs=x)
 
+
+
+  
+class IVect(keras.layers.Layer):
+  def __init__(self,**kwargs):#, input_dim=2):
+    super(IVect, self).__init__()
+    self.preprocessing = keras.layers.Lambda(lambda x: ((x-oldmin)*(1.- 0.)/(oldmax-oldmin)) + 0. )
+    self.dense_1 = keras.layers.Dense(32)
+
+  def call(self, inputs):
+    x = self.preprocessing(inputs)
+    return self.dense_1(x) 
+
+
+
+  
 
 # In[7]:
 
 
 #network
-preprocessing_layers=volume_layers()
+#preprocessing_layers=volume_layers()
 #preprocessing_layers=(volume_layers(),input_vect_layers())
-#preprocessing_layers=input_vect_layers()
 
+#preprocessing_layers=input_vect_layers()
+preprocessing_layers = IVect()
 preprocessing_combiner = tf.keras.layers.Concatenate(axis=-1)
 dense_l = pm['model']['fc_layer_params']
 if len(dense_l) == 1:
@@ -227,7 +223,6 @@ preprocessing_layers=preprocessing_layers,
 #preprocessing_combiner=preprocessing_combiner,
 fc_layer_params=fc_layer_params,
 num_atoms=pm['categorical_dqn']['n_atoms'])
-
 
 # In[8]:
 
@@ -398,7 +393,7 @@ def train_agent(n_iterations):
 
 
         if iteration % 5000 == 0:
-          test_models = ['213_2d__']
+          test_models = ['209_2d']
           test_data = os.path.join(data_log_path,"tests", run_label+'.json')
           policy_test.test_policy(environment='ScannerEnv-v1', models_path=models_path,
                                   models=test_models, policy=agent.policy,
@@ -449,7 +444,7 @@ tf_policy_saver.save(policy_dir)
 '''test_models = ['206_2d','207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d' ,'215_2d',
                '216_2d','217_2d','218_2d']'''
-test_models = ['213_2d__']
+test_models = ['209_2d']
 test_data = os.path.join(data_log_path,"tests", run_label+'.json')
 policy_test.test_policy(environment='ScannerEnv-v1', models_path=models_path,
                         models=test_models, policy=agent.policy,

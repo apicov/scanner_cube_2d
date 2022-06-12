@@ -1,12 +1,12 @@
 {
- "agent": { "decay_steps": 16000, 
-            "target_update_period": 100 , 
+ "agent": { "decay_steps": 800000, 
+            "target_update_period": 10000 , 
             "gamma": 0.99},
 
- "rbuffer"   : {"max_length": 2000,
+ "rbuffer"   : {"max_length": 100000,
                 "sample_batch_size" : 64},
 
- "rnd_policy" : {   "num_steps": 500 },
+ "rnd_policy" : {   "num_steps": 10000 },
  
 
  "collect_driver" : { "num_steps" : 1},
@@ -17,7 +17,7 @@
               "learning_rate" : 0.0001
             },
             
- "misc" :  { "n_iterations" :  20000
+ "misc" :  { "n_iterations" :  1000000
  		},
  	
     "categorical_dqn": { "n_atoms": 51,

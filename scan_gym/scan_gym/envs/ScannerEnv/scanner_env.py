@@ -89,8 +89,8 @@ class ScannerEnv(gym.Env):
         if self.multi_in:
             self.observation_space = gym.spaces.Tuple((self.vol_obs_space,self.vec_ob_space))
         else:
-            self.observation_space = self.vol_obs_space
-            #self.observation_space = self.vec_ob_space
+            #self.observation_space = self.vol_obs_space
+            self.observation_space = self.vec_ob_space
 
         if self.continuous:
              self.action_space = spaces.Box(-1, +1, (2,), dtype=np.float32)     
@@ -255,7 +255,7 @@ class ScannerEnv(gym.Env):
         #self._spec.id = "Romi-v0"
         self.reset()
 
-    def reset(self,theta_init=-1,phi_init=-1,theta_bias=0):
+    def reset(self,theta_init=0,phi_init=0,theta_bias=0):
         self.gano = False
         self.num_steps = 0
         self.total_reward = 0
@@ -356,10 +356,10 @@ class ScannerEnv(gym.Env):
         if self.multi_in:
             self.current_state = ( vol.astype('float16'), np.array([self.current_theta, self.current_phi],dtype=int))
         else:
-            self.current_state =vol.astype('float16')  #self.zeros #vol.astype('float16')
+            #self.current_state = vol.astype('float16')  #self.zeros #vol.astype('float16')
 
 
-            #self.current_state =  np.array([self.current_theta, self.current_phi],dtype=int)
+            self.current_state =  np.array([self.current_theta, self.current_phi],dtype=int)
             #self.current_state =  np.array([0,0],dtype=int)
             #self.current_state =  np.array(theta_state+phi_state,dtype=int)
 
@@ -475,7 +475,7 @@ class ScannerEnv(gym.Env):
 
         if self.num_steps >= (self.n_images-1):
             #reward =  self.spc.gt_compare_empty_voxels()
-            reward = self.es_similarity[-1] - self.es_similarity[6]
+            reward = self.es_similarity[-1]# - np.mean(self.es_similarity) #self.es_similarity[-1] - self.es_similarity[6]
             self.done = True
            
         self.total_reward += reward
@@ -492,8 +492,8 @@ class ScannerEnv(gym.Env):
         if self.multi_in:
             self.current_state = ( vol.astype('float16'), np.array([self.current_theta, self.current_phi],dtype=int))
         else:
-            self.current_state = vol.astype('float16')   #self.zeros #vol.astype('float16')
-            #self.current_state =  np.array([self.current_theta, self.current_phi],dtype=int)
+            #self.current_state = vol.astype('float16')   #self.zeros #vol.astype('float16')
+            self.current_state =  np.array([self.current_theta, self.current_phi],dtype=int)
             #self.current_state =  np.array([0,0],dtype=int)
             #self.current_state =  np.array(theta_state+phi_state,dtype=int)
 
