@@ -58,7 +58,7 @@ from scan_gym import envs
 
 def run_episode(env,tf_env,policy):
     state = tf_env.reset()
-    time_steps = 40
+    time_steps = 90
     actions = []
     images = []
     rewards = []
@@ -73,6 +73,7 @@ def run_episode(env,tf_env,policy):
         if state.is_last():
             break
     return actions, images, env.theta_bias, rewards, env.total_reward , env.spc.gt_compare_solid()
+    #return [], images, env.theta_bias, [], env.total_reward , env.spc.gt_compare_solid()
 
 
 def test_policy(environment, models_path, models, policy, n_images, n_episodes, dest_path ):

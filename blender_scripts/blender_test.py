@@ -361,8 +361,8 @@ if __name__ == "__main__":
 
     for z in range(params['traj']['N_phi']):
         for theta in range(params['traj']['N_theta']):
-            #image = goto(theta,z,R,N_theta,N_phi)
-            image = goto_cylinder(theta,z,R,N_theta,N_phi)
+            image = goto(theta,z,R,N_theta,N_phi)
+            #image = goto_cylinder(theta,z,R,N_theta,N_phi)
             im_path = img_dir + '/' + str(z).zfill(3) + '_' + str(theta).zfill(3) +'.png'
             mask_path =  masks_dir + '/' + str(z).zfill(3) + '_' + str(theta).zfill(3) +'.png'
             ext_path = ext_dir + '/' + str(z).zfill(3) + '_' + str(theta).zfill(3) +'.json'

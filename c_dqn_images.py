@@ -79,7 +79,7 @@ from utils import policy_test
 current_path = os.getcwd()
 params_file = os.path.join(current_path, 'params.json') 
 pm=json.load(open(params_file))
-run_label = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+run_label = '213_anticlockwise'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 data_log_path = os.path.join(current_path, 'generated_data/') 
 
 #save parameters and code used for this training
@@ -101,8 +101,8 @@ models_path  = '/home/pico/uni/romi/scanner-gym_models_v2'
 #models = ['207_2d','208_2d','209_2d','210_2d','211_2d']
 '''train_models = ['207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d']'''
-train_models = ['208_2d','209_2d', '212_2d','213_2d','217_2d','218_2d']
-#train_models = ['212_2d']
+#train_models = ['208_2d','209_2d', '212_2d','213_2d','217_2d','218_2d']
+train_models = ['213_2d']
 n_images = 10
 continuous = False
 
@@ -157,7 +157,7 @@ def image_layers():
     x = keras.layers.Flatten()(x)
     #x = keras.layers.GlobalAveragePooling3D()(x)
   
-    x = keras.layers.Dense(512)(x)
+    #x = keras.layers.Dense(512)(x)
                                         
     model = keras.models.Model(inputs=input_im,outputs=x)
     model.summary()
@@ -423,10 +423,10 @@ tf_policy_saver.save(policy_dir)
 
 
 # test learned policy
-test_models = ['206_2d','207_2d','208_2d','209_2d', '210_2d',
+'''test_models = ['206_2d','207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d' ,'215_2d',
-               '216_2d','217_2d','218_2d']
-#test_models = ['212_2d']
+               '216_2d','217_2d','218_2d']'''
+test_models = ['212_2d','213_2d','218_2d']
 test_data = os.path.join(data_log_path,"tests", run_label+'.json')
 policy_test.test_policy(environment='ScannerEnv-v2', models_path=models_path,
                         models=test_models, policy=agent.policy,

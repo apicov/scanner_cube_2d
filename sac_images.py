@@ -57,7 +57,7 @@ from tf_agents.train.utils import spec_utils
 from tf_agents.train.utils import strategy_utils
 from tf_agents.train.utils import train_utils
 
-
+from tf_agents.metrics import tf_metrics
 import tensorflow.keras as keras
 
 tf.compat.v1.enable_v2_behavior()
@@ -222,11 +222,11 @@ env_name = "MinitaurBulletEnv-v0" # @param {type:"string"}
 
 # Use "num_iterations = 1e6" for better results (2 hrs)
 # 1e5 is just so this doesn't take too long (1 hr)
-num_iterations = 10000 # @param {type:"integer"}
+num_iterations =50000 # @param {type:"integer"}
 
 initial_collect_steps = 1000 # @param {type:"integer"}
 collect_steps_per_iteration = 1 # @param {type:"integer"}
-replay_buffer_capacity = 1000 # @param {type:"integer"}
+replay_buffer_capacity = 50000 # @param {type:"integer"}
 
 batch_size = 16 # @param {type:"integer"}
 
@@ -240,7 +240,7 @@ reward_scale_factor = 1.0 # @param {type:"number"}
 
 log_interval = 5000 # @param {type:"integer"}
 
-num_eval_episodes = 20 # @param {type:"integer"}
+num_eval_episodes = 10 # @param {type:"integer"}
 eval_interval = 10 # @param {type:"integer"}
 
 policy_save_interval = 5000 # @param {type:"integer"}
@@ -252,7 +252,7 @@ policy_save_interval = 5000 # @param {type:"integer"}
 models_path  = '/home/pico/uni/romi/scanner-gym_models_v2'
 '''train_models = ['207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d']'''
-train_models = ['209_2d'] 
+train_models = ['212_2d'] 
 n_images = 10
 continuous = True
 
@@ -460,6 +460,8 @@ initial_collect_actor = actor.Actor(
 initial_collect_actor.run()
 
 
+
+
 # Instantiate an Actor with the collect policy to gather more experiences during training.
 
 # In[19]:
@@ -473,7 +475,7 @@ collect_actor = actor.Actor(
   steps_per_run=1,
   metrics=actor.collect_metrics(10),
   summary_dir=os.path.join(tempdir, learner.TRAIN_DIR),
-  observers=[rb_observer, env_step_metric])
+  observers=[rb_observer, env_step_metric] )
 
 
 # Create an Actor which will be used to evaluate the policy during training. We pass in `actor.eval_metrics(num_eval_episodes)` to log metrics later.
@@ -559,12 +561,6 @@ log_eval_metrics(0, metrics)
 # In[24]:
 
 
-#@test {"skip": true}
-try:
-  get_ipython().run_line_magic('time', '')
-except:
-  pass
-
 # Reset the train step
 tf_agent.train_step_counter.assign(0)
 
@@ -584,6 +580,13 @@ for _ in range(num_iterations):
     metrics = get_eval_metrics()
     log_eval_metrics(step, metrics)
     returns.append(metrics["AverageReturn"])
+
+   
+    '''with train_summary_writer.as_default():
+      #plot metrics
+      for train_metric in training_metrics:
+        train_metric.tf_summaries(train_step=tf.cast(train_step,tf.int64), step_metrics=training_metrics[:])
+        train_summary_writer.flush()'''
 
   if log_interval and step % log_interval == 0:
     print('\rstep = {0}: loss = {1}'.format(step, loss_info.loss.numpy()), end="")
@@ -620,7 +623,11 @@ reverb_server.stop()
 
 # In[ ]:
 
-
+test_models = ['212_2d']
+test_data = "tests_.json"
+policy_test.test_policy(environment='ScannerEnv-v2', models_path=models_path,
+                        models=test_models, policy=eval_policy,
+                        n_images=n_images, n_episodes = 180, dest_path=test_data )
 stest = policy_test.run_episode(eval_env, tf_eval_env,tf_eval_policy)
 
 

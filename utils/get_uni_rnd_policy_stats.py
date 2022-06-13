@@ -26,7 +26,7 @@ def calculate_position(init_state,steps):
 
 
 def test_rnd_policy(models_path, model, n_images, init_position, theta_bias):
-    scan_env = gym.make('ScannerEnv-v1', models_path=models_path, train_models=[model],
+    scan_env = gym.make('ScannerEnv-v2', models_path=models_path, train_models=[model],
                         n_images = n_images, continuous=False, gt_mode=True, cube_view='static')
     
     scan_env.reset(theta_init=init_position[0], phi_init=init_position[1], theta_bias=theta_bias)
@@ -57,10 +57,10 @@ def test_uniform(models_path,model,n_images, init_theta):
 
 
 
-models_path  = '/home/pico/uni/romi/scanner-gym_models_v3'
+models_path  = '/home/pico/uni/romi/scanner-gym_models_v2'
 '''models = ['206_2d','207_2d','208_2d','209_2d','210_2d','211_2d','212_2d','213_2d','214_2d','215_2d','216_2d', '217_2d','218_2d']'''
-models = ['213_2d__']
-n_images = 20
+models = ['212_2d','213_2d', '218_2d']
+n_images = 10
 
 
 # generate set of random initial positions and position biases for using in all tests
