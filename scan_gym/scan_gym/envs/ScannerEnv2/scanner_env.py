@@ -40,6 +40,7 @@ class ScannerEnv(gym.Env):
 
         # keep empty spaces measurements
         self.es_similarity = []
+        self.solid_similarities = []
         
 
         #for activating continuous action mode
@@ -254,6 +255,7 @@ class ScannerEnv(gym.Env):
         self.num_steps = 0
         self.total_reward = 0
         self.done = False
+        self.solid_similarities = []
 
         #keep camera positions of the episode
         self.theta_history = []
@@ -306,6 +308,7 @@ class ScannerEnv(gym.Env):
         #last count of empty spaces
         #self.last_empty_voxel_count =  np.count_nonzero(vol == -1)
         #self.es_similarity.append( self.spc.gt_compare_empty_voxels())
+        self.solid_similarities.append(self.spc.gt_compare_solid())
 
         # get camera image
         im = np.array(self.spc.get_image(self.current_theta, self.current_phi))
@@ -424,8 +427,10 @@ class ScannerEnv(gym.Env):
 
         #reward =  (self.current_empty_voxel_count / self.spc.gt_n_empty_voxels)#/self.n_images
         #self.es_similarity.append( self.spc.gt_compare_empty_voxels())
+        self.solid_similarities.append(self.spc.gt_compare_solid())
 
-        reward = 0 #  self.es_similarity[-1] - self.es_similarity[-2]
+        reward =  self.solid_similarities[-1] -  self.solid_similarities[-2]
+        #reward = 0 #  self.es_similarity[-1] - self.es_similarity[-2]
 
         '''p_list = [0,50,34,2,49,3,11,14,15,150]
         if self.current_theta == p_list[self.num_steps]:
@@ -467,7 +472,8 @@ class ScannerEnv(gym.Env):
         '''
 
         if self.num_steps >= (self.n_images-1):
-            reward = self.spc.gt_compare_solid()
+            reward +=  self.solid_similarities[0]
+            #reward = self.spc.gt_compare_solid()
             #reward =  self.spc.gt_compare_empty_voxels()
             #reward = self.es_similarity[-1] # -  np.mean(self.es_similarity) # self.es_similarity[-1] # - self.es_similarity[6]
             self.done = True

@@ -112,8 +112,8 @@ def test_policy(environment, models_path, models, policy, n_images, n_episodes, 
 
         print("\n{} rwd_mean {:.4f} rwd_std {:.4f} gt_ratio_mean {:.4f} gt_ratio_std {:.4f}".format(p,data_holder['cum_reward_mean'],data_holder['cum_reward_std'], \
                                                                                data_holder['gt_ratio_mean'], data_holder['gt_ratio_std']) )
-        
-    f = open(dest_path,'w')
-    json.dump(collected_data, f)
-    f.close()
+    if dest_path != "":
+        f = open(dest_path,'w')
+        json.dump(collected_data, f)
+        f.close()
         

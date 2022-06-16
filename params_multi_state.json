@@ -1,9 +1,9 @@
 {
  "agent": { "decay_steps": 40000, 
-            "target_update_period": 1000 , 
+            "target_update_period": 100 , 
             "gamma": 0.7},
 
- "rbuffer"   : {"max_length": 80000,
+ "rbuffer"   : {"max_length": 50000,
                 "sample_batch_size" : 64},
 
  "rnd_policy" : {   "num_steps": 2000 },

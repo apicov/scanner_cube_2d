@@ -1,7 +1,7 @@
 {"gt_path": "",
  "scanner": {"w": 1080, "h": 800, "f": 24},
  "plant_id": 0,  
- "traj"   : {"R":3.5, "N_theta": 180, "N_phi": 4},
+ "traj"   : {"R":5, "N_theta": 180, "N_phi": 4},
  "sc"     : {"voxel_size": 0.126, "n_dilation": 2}
 }
 

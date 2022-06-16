@@ -77,9 +77,9 @@ from utils import policy_test
 
 
 current_path = os.getcwd()
-params_file = os.path.join(current_path, 'params.json') 
+params_file = os.path.join(current_path, 'params_multi_state.json') 
 pm=json.load(open(params_file))
-run_label = '212_gamma10im'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+run_label = '208_multistate15im'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 data_log_path = os.path.join(current_path, 'generated_data/') 
 
 #save parameters and code used for this training
@@ -102,14 +102,14 @@ models_path  = '/home/pico/uni/romi/scanner-gym_models_v3'
 '''train_models = ['207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d']'''
 #train_models = ['208_2d','209_2d', '212_2d','213_2d','217_2d','218_2d']
-train_models = ['212_2d']
-n_images = 10
+train_models = ['208_2d']
+n_images = 15
 continuous = False
 
 #scan_env = gym.make('ScannerEnv-v1', models_path=models_path, train_models=models,
 #                   n_images = n_images, continuous=continuous, gt_mode=True, cube_view='static')
 
-env = suite_gym.load('ScannerEnv-v2',gym_kwargs={'models_path':models_path, 'train_models':train_models,
+env = suite_gym.load('ScannerEnv-v3',gym_kwargs={'models_path':models_path, 'train_models':train_models,
                                                    'n_images':n_images, 'continuous':continuous,
                                                    'gt_mode':True,'cube_view':'static'}) 
 
@@ -168,14 +168,14 @@ def image_layers():
 #oldmin = tf_env.observation_spec()[1].minimum
 #oldmax = tf_env.observation_spec()[1].maximum
 
-#oldmin = tf_env.observation_spec().minimum
-#oldmax = tf_env.observation_spec().maximum
-
+oldmin = tf_env.observation_spec().minimum
+oldmax = tf_env.observation_spec().maximum
+print(oldmax)
 
 #print(oldmin,oldmax)
     
 def input_vect_layers():
-    input_ = keras.layers.Input(shape=(2,))
+    input_ = keras.layers.Input(shape=(7,))
     preprocessing = keras.layers.Lambda(lambda x: ((x-oldmin)*(1.- 0.)/(oldmax-oldmin)) + 0. )(input_)
     #x = keras.layers.Dense(32)(preprocessing)
     return keras.models.Model(inputs=input_,outputs=preprocessing)
@@ -185,9 +185,9 @@ def input_vect_layers():
 
 
 #network
-preprocessing_layers=image_layers()
-#preprocessing_layers=(volume_layers(),input_vect_layers())
-#preprocessing_layers=input_vect_layers()
+#preprocessing_layers=image_layers()
+#preprocessing_layers=(image_layers(),input_vect_layers())
+preprocessing_layers=input_vect_layers()
 
 preprocessing_combiner = tf.keras.layers.Concatenate(axis=-1)
 dense_l = pm['model']['fc_layer_params']
@@ -377,7 +377,7 @@ def train_agent(n_iterations):
         if iteration % 5000 == 0:
           test_models =train_models
           test_data = os.path.join(data_log_path,"tests", run_label+'.json')
-          policy_test.test_policy(environment='ScannerEnv-v2', models_path=models_path,
+          policy_test.test_policy(environment='ScannerEnv-v3', models_path=models_path,
                                   models=test_models, policy=agent.policy,
                                   n_images=n_images, n_episodes = 50, dest_path="" )
 
@@ -428,7 +428,7 @@ tf_policy_saver.save(policy_dir)
                '216_2d','217_2d','218_2d']'''
 test_models = ['208_2d','212_2d','213_2d_','218_2d']
 test_data = os.path.join(data_log_path,"tests", run_label+'.json')
-policy_test.test_policy(environment='ScannerEnv-v2', models_path=models_path,
+policy_test.test_policy(environment='ScannerEnv-v3', models_path=models_path,
                         models=test_models, policy=agent.policy,
                         n_images=n_images, n_episodes = 180, dest_path=test_data )
 
