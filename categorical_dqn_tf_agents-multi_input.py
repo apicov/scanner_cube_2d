@@ -78,9 +78,9 @@ from utils import policy_test
 
 
 current_path = os.getcwd()
-params_file = os.path.join(current_path, 'params.json') 
+params_file = os.path.join(current_path, 'params_cube.json') 
 pm=json.load(open(params_file))
-run_label = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+run_label =  '08-12-13-18_cube15im'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 data_log_path = os.path.join(current_path, 'generated_data/') 
 
 #save parameters and code used for this training
@@ -98,13 +98,13 @@ shutil.copyfile(src, dst)
 # In[3]:
 
 
-models_path  = '/home/pico/uni/romi/scanner-gym_models_v2'
+models_path  = '/home/pico/uni/romi/scanner-gym_models_v3'
 #models = ['207_2d','208_2d','209_2d','210_2d','211_2d']
 '''train_models = ['207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d']'''
 #train_models = ['208_2d','209_2d', '212_2d','213_2d','217_2d','218_2d']
-train_models = ['209_2d']
-n_images = 10
+train_models = ['208_2d','212_2d','213_2d_','218_2d']
+n_images = 15
 continuous = False
 
 #scan_env = gym.make('ScannerEnv-v1', models_path=models_path, train_models=models,
@@ -185,7 +185,7 @@ def input_vect_layers():
 
 
   
-class IVect(keras.layers.Layer):
+'''class IVect(keras.layers.Layer):
   def __init__(self,**kwargs):#, input_dim=2):
     super(IVect, self).__init__()
     self.preprocessing = keras.layers.Lambda(lambda x: ((x-oldmin)*(1.- 0.)/(oldmax-oldmin)) + 0. )
@@ -195,7 +195,7 @@ class IVect(keras.layers.Layer):
     x = self.preprocessing(inputs)
     return self.dense_1(x) 
 
-
+'''
 
   
 
@@ -203,11 +203,11 @@ class IVect(keras.layers.Layer):
 
 
 #network
-#preprocessing_layers=volume_layers()
+preprocessing_layers=volume_layers()
 #preprocessing_layers=(volume_layers(),input_vect_layers())
 
 #preprocessing_layers=input_vect_layers()
-preprocessing_layers = IVect()
+#preprocessing_layers = IVect()
 preprocessing_combiner = tf.keras.layers.Concatenate(axis=-1)
 dense_l = pm['model']['fc_layer_params']
 if len(dense_l) == 1:
@@ -393,11 +393,12 @@ def train_agent(n_iterations):
 
 
         if iteration % 5000 == 0:
-          test_models = ['209_2d']
+          test_models =train_models
           test_data = os.path.join(data_log_path,"tests", run_label+'.json')
           policy_test.test_policy(environment='ScannerEnv-v1', models_path=models_path,
                                   models=test_models, policy=agent.policy,
-                                  n_images=n_images, n_episodes = 50, dest_path=test_data )
+                                  n_images=n_images, n_episodes = 50, dest_path='' )
+          
 
 # In[18]:
 
@@ -444,7 +445,7 @@ tf_policy_saver.save(policy_dir)
 '''test_models = ['206_2d','207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d' ,'215_2d',
                '216_2d','217_2d','218_2d']'''
-test_models = ['209_2d']
+test_models = ['208_2d','212_2d','213_2d_','218_2d']
 test_data = os.path.join(data_log_path,"tests", run_label+'.json')
 policy_test.test_policy(environment='ScannerEnv-v1', models_path=models_path,
                         models=test_models, policy=agent.policy,

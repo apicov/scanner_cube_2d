@@ -79,7 +79,7 @@ from utils import policy_test
 current_path = os.getcwd()
 params_file = os.path.join(current_path, 'params.json') 
 pm=json.load(open(params_file))
-run_label = '212_gamma10im'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+run_label = '08-12-13-18_gamma05im'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 data_log_path = os.path.join(current_path, 'generated_data/') 
 
 #save parameters and code used for this training
@@ -102,8 +102,8 @@ models_path  = '/home/pico/uni/romi/scanner-gym_models_v3'
 '''train_models = ['207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d']'''
 #train_models = ['208_2d','209_2d', '212_2d','213_2d','217_2d','218_2d']
-train_models = ['212_2d']
-n_images = 10
+train_models = ['208_2d','212_2d','213_2d_','218_2d']
+n_images = 5
 continuous = False
 
 #scan_env = gym.make('ScannerEnv-v1', models_path=models_path, train_models=models,
@@ -376,7 +376,6 @@ def train_agent(n_iterations):
 
         if iteration % 5000 == 0:
           test_models =train_models
-          test_data = os.path.join(data_log_path,"tests", run_label+'.json')
           policy_test.test_policy(environment='ScannerEnv-v2', models_path=models_path,
                                   models=test_models, policy=agent.policy,
                                   n_images=n_images, n_episodes = 50, dest_path="" )

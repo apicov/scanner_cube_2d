@@ -40,7 +40,7 @@ class ScannerEnv(gym.Env):
 
         # keep empty spaces measurements
         self.es_similarity = []
-        
+        self.solid_similarities = []
 
         #for activating continuous action mode
         self.continuous = continuous
@@ -89,8 +89,8 @@ class ScannerEnv(gym.Env):
         if self.multi_in:
             self.observation_space = gym.spaces.Tuple((self.vol_obs_space,self.vec_ob_space))
         else:
-            #self.observation_space = self.vol_obs_space
-            self.observation_space = self.vec_ob_space
+            self.observation_space = self.vol_obs_space
+            #self.observation_space = self.vec_ob_space
 
         if self.continuous:
              self.action_space = spaces.Box(-1, +1, (2,), dtype=np.float32)     
@@ -194,7 +194,37 @@ class ScannerEnv(gym.Env):
                             55 : (-2,3), 56 : (-1,0), 57 : (-1,1), 58 : (-1,2), 59 : (-1,3), 
                             }'''
 
-            self.actions = {0 : (0,0), 1 : (0,1), 2 : (0,2), 3 : (0,3), 4 : (0,-3), 
+
+            self.actions = {0 : (0,-3), 1 : (0,-2), 2 : (0,-1), 3 : (0,0), 4 : (0,1), 
+                            5 : (0,2), 6 : (0,3), 7 : (2,-3), 8 : (2,-2), 9 : (2,-1), 
+                            10 : (2,0), 11 : (2,1), 12 : (2,2), 13 : (2,3), 14 : (4,-3), 
+                            15 : (4,-2), 16 : (4,-1), 17 : (4,0), 18 : (4,1), 19 : (4,2), 
+                            20 : (4,3), 21 : (7,-3), 22 : (7,-2), 23 : (7,-1), 24 : (7,0), 
+                            25 : (7,1), 26 : (7,2), 27 : (7,3), 28 : (9,-3), 29 : (9,-2), 
+                            30 : (9,-1), 31 : (9,0), 32 : (9,1), 33 : (9,2), 34 : (9,3), 
+                            35 : (11,-3), 36 : (11,-2), 37 : (11,-1), 38 : (11,0), 39 : (11,1), 
+                            40 : (11,2), 41 : (11,3), 42 : (14,-3), 43 : (14,-2), 44 : (14,-1), 
+                            45 : (14,0), 46 : (14,1), 47 : (14,2), 48 : (14,3), 49 : (16,-3), 
+                            50 : (16,-2), 51 : (16,-1), 52 : (16,0), 53 : (16,1), 54 : (16,2), 
+                            55 : (16,3), 56 : (18,-3), 57 : (18,-2), 58 : (18,-1), 59 : (18,0), 
+                            60 : (18,1), 61 : (18,2), 62 : (18,3), 63 : (21,-3), 64 : (21,-2), 
+                            65 : (21,-1), 66 : (21,0), 67 : (21,1), 68 : (21,2), 69 : (21,3), 
+                            70 : (23,-3), 71 : (23,-2), 72 : (23,-1), 73 : (23,0), 74 : (23,1), 
+                            75 : (23,2), 76 : (23,3), 77 : (26,-3), 78 : (26,-2), 79 : (26,-1), 
+                            80 : (26,0), 81 : (26,1), 82 : (26,2), 83 : (26,3), 84 : (28,-3), 
+                            85 : (28,-2), 86 : (28,-1), 87 : (28,0), 88 : (28,1), 89 : (28,2), 
+                            90 : (28,3), 91 : (30,-3), 92 : (30,-2), 93 : (30,-1), 94 : (30,0), 
+                            95 : (30,1), 96 : (30,2), 97 : (30,3), 98 : (33,-3), 99 : (33,-2), 
+                            100 : (33,-1), 101 : (33,0), 102 : (33,1), 103 : (33,2), 104 : (33,3), 
+                            105 : (35,-3), 106 : (35,-2), 107 : (35,-1), 108 : (35,0), 109 : (35,1), 
+                            110 : (35,2), 111 : (35,3), 112 : (37,-3), 113 : (37,-2), 114 : (37,-1), 
+                            115 : (37,0), 116 : (37,1), 117 : (37,2), 118 : (37,3), 119 : (40,-3), 
+                            120 : (40,-2), 121 : (40,-1), 122 : (40,0), 123 : (40,1), 124 : (40,2), 
+                            125 : (40,3), 126 : (42,-3), 127 : (42,-2), 128 : (42,-1), 129 : (42,0), 
+                            130 : (42,1), 131 : (42,2), 132 : (42,3), 133 : (45,-3), 134 : (45,-2), 
+                            135 : (45,-1), 136 : (45,0), 137 : (45,1), 138 : (45,2), 139 : (45,3)}
+             
+            '''self.actions = {0 : (0,0), 1 : (0,1), 2 : (0,2), 3 : (0,3), 4 : (0,-3), 
                             5 : (0,-2), 6 : (0,-1), 7 : (1,0), 8 : (1,1), 9 : (1,2), 
                             10 : (1,3), 11 : (1,-3), 12 : (1,-2), 13 : (1,-1), 14 : (2,0), 
                             15 : (2,1), 16 : (2,2), 17 : (2,3), 18 : (2,-3), 19 : (2,-2), 
@@ -215,7 +245,7 @@ class ScannerEnv(gym.Env):
                             90 : (-3,-1), 91 : (-2,0), 92 : (-2,1), 93 : (-2,2), 94 : (-2,3), 
                             95 : (-2,-3), 96 : (-2,-2), 97 : (-2,-1), 98 : (-1,0), 99 : (-1,1), 
                             100 : (-1,2), 101 : (-1,3), 102 : (-1,-3), 103 : (-1,-2), 104 : (-1,-1),
-                            }
+                            }'''
 
 
             '''self.actions = {0 : (-45,-3), 1 : (-45,-2), 2 : (-45,-1), 3 : (-45,0), 4 : (-45,1), 
@@ -260,6 +290,7 @@ class ScannerEnv(gym.Env):
         self.num_steps = 0
         self.total_reward = 0
         self.done = False
+        self.solid_similarities = []
 
         #keep camera positions of the episode
         self.theta_history = []
@@ -311,7 +342,8 @@ class ScannerEnv(gym.Env):
         # -1's (empty space), 0's (undetermined) and 1's (solid) from 3d volume
         #last count of empty spaces
         #self.last_empty_voxel_count =  np.count_nonzero(vol == -1)
-        self.es_similarity.append( self.spc.gt_compare_empty_voxels())
+        #self.es_similarity.append( self.spc.gt_compare_empty_voxels())
+        self.solid_similarities.append(self.spc.gt_compare_solid())
 
         # get camera image
         #im = np.array(self.spc.get_image(self.current_theta, self.current_phi))
@@ -356,10 +388,10 @@ class ScannerEnv(gym.Env):
         if self.multi_in:
             self.current_state = ( vol.astype('float16'), np.array([self.current_theta, self.current_phi],dtype=int))
         else:
-            #self.current_state = vol.astype('float16')  #self.zeros #vol.astype('float16')
+            self.current_state = vol.astype('float16')  #self.zeros #vol.astype('float16')
 
 
-            self.current_state =  np.array([self.current_theta, self.current_phi],dtype=int)
+            #self.current_state =  np.array([self.current_theta, self.current_phi],dtype=int)
             #self.current_state =  np.array([0,0],dtype=int)
             #self.current_state =  np.array(theta_state+phi_state,dtype=int)
 
@@ -429,9 +461,10 @@ class ScannerEnv(gym.Env):
         #reward = (delta_empty_voxels / self.spc.gt_n_empty_voxels) * self.num_steps
 
         #reward =  (self.current_empty_voxel_count / self.spc.gt_n_empty_voxels)#/self.n_images
-        self.es_similarity.append( self.spc.gt_compare_empty_voxels())
+        #self.es_similarity.append( self.spc.gt_compare_empty_voxels())
+        self.solid_similarities.append(self.spc.gt_compare_solid())
 
-        reward = 0 #  self.es_similarity[-1] - self.es_similarity[-2]
+        reward = self.solid_similarities[-1] -  self.solid_similarities[-2] #0 #  self.es_similarity[-1] - self.es_similarity[-2]
 
         '''p_list = [0,50,34,2,49,3,11,14,15,150]
         if self.current_theta == p_list[self.num_steps]:
@@ -474,8 +507,9 @@ class ScannerEnv(gym.Env):
 
 
         if self.num_steps >= (self.n_images-1):
+            reward +=  self.solid_similarities[0]
             #reward =  self.spc.gt_compare_empty_voxels()
-            reward = self.es_similarity[-1]# - np.mean(self.es_similarity) #self.es_similarity[-1] - self.es_similarity[6]
+            #reward = self.es_similarity[-1]# - np.mean(self.es_similarity) #self.es_similarity[-1] - self.es_similarity[6]
             self.done = True
            
         self.total_reward += reward
@@ -492,8 +526,8 @@ class ScannerEnv(gym.Env):
         if self.multi_in:
             self.current_state = ( vol.astype('float16'), np.array([self.current_theta, self.current_phi],dtype=int))
         else:
-            #self.current_state = vol.astype('float16')   #self.zeros #vol.astype('float16')
-            self.current_state =  np.array([self.current_theta, self.current_phi],dtype=int)
+            self.current_state = vol.astype('float16')   #self.zeros #vol.astype('float16')
+            #self.current_state =  np.array([self.current_theta, self.current_phi],dtype=int)
             #self.current_state =  np.array([0,0],dtype=int)
             #self.current_state =  np.array(theta_state+phi_state,dtype=int)
 
