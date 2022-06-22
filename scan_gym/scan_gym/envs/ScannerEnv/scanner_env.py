@@ -285,7 +285,7 @@ class ScannerEnv(gym.Env):
         #self._spec.id = "Romi-v0"
         self.reset()
 
-    def reset(self,theta_init=0,phi_init=0,theta_bias=0):
+    def reset(self,theta_init=-1,phi_init=-1,theta_bias=0):
         self.gano = False
         self.num_steps = 0
         self.total_reward = 0

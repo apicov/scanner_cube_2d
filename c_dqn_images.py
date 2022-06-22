@@ -79,7 +79,7 @@ from utils import policy_test
 current_path = os.getcwd()
 params_file = os.path.join(current_path, 'params.json') 
 pm=json.load(open(params_file))
-run_label = '08-12-13-18_gamma05im'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+run_label = '08-12-13-18_img_multi05im'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 data_log_path = os.path.join(current_path, 'generated_data/') 
 
 #save parameters and code used for this training
@@ -157,7 +157,7 @@ def image_layers():
     x = keras.layers.Flatten()(x)
     #x = keras.layers.GlobalAveragePooling3D()(x)
   
-    x = keras.layers.Dense(512)(x)
+    #x = keras.layers.Dense(512)(x)
                                         
     model = keras.models.Model(inputs=input_im,outputs=x)
     model.summary()
@@ -165,14 +165,14 @@ def image_layers():
     
 
 #scale range 0 to 1
-#oldmin = tf_env.observation_spec()[1].minimum
-#oldmax = tf_env.observation_spec()[1].maximum
+oldmin = tf_env.observation_spec()[1].minimum
+oldmax = tf_env.observation_spec()[1].maximum
 
 #oldmin = tf_env.observation_spec().minimum
 #oldmax = tf_env.observation_spec().maximum
 
 
-#print(oldmin,oldmax)
+print(oldmin,oldmax)
     
 def input_vect_layers():
     input_ = keras.layers.Input(shape=(2,))
@@ -185,8 +185,8 @@ def input_vect_layers():
 
 
 #network
-preprocessing_layers=image_layers()
-#preprocessing_layers=(volume_layers(),input_vect_layers())
+#preprocessing_layers=image_layers()
+preprocessing_layers=(image_layers(),input_vect_layers())
 #preprocessing_layers=input_vect_layers()
 
 preprocessing_combiner = tf.keras.layers.Concatenate(axis=-1)
@@ -201,7 +201,7 @@ categorical_q_net = categorical_q_network.CategoricalQNetwork(
 tf_env.observation_spec(),
 tf_env.action_spec(),
 preprocessing_layers=preprocessing_layers,
-#preprocessing_combiner=preprocessing_combiner,
+preprocessing_combiner=preprocessing_combiner,
 fc_layer_params=fc_layer_params,
 num_atoms=pm['categorical_dqn']['n_atoms'])
 

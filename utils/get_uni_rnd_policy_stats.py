@@ -74,13 +74,13 @@ f = open("uni_rnd_policy_runs_10_v3.json",'w')
 models_path  = '/home/pico/uni/romi/scanner-gym_models_v3'
 '''models = ['206_2d','207_2d','208_2d','209_2d','210_2d','211_2d','212_2d','213_2d','214_2d','215_2d','216_2d', '217_2d','218_2d']'''
 models = ['208_2d','212_2d','213_2d_', '218_2d']
-n_images = 10
+n_images = 28
 
 
 # generate set of random initial positions and position biases for using in all tests
 seed = 43
 np.random.seed(seed)
-n_init_positions = 1000
+n_init_positions = 20
 theta_phi_posbias = np.random.randint((0,0,0),(TOTAL_THETA,TOTAL_PHI,1),(n_init_positions,3))
 
 

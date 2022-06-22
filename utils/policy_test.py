@@ -58,7 +58,7 @@ from scan_gym import envs
 
 def run_episode(env,tf_env,policy):
     state = tf_env.reset()
-    time_steps = 90
+    time_steps = 1000
     actions = []
     images = []
     rewards = []
@@ -72,12 +72,12 @@ def run_episode(env,tf_env,policy):
         rewards.append(float(state.reward.numpy()[0]))
         if state.is_last():
             break
-    return actions, images, env.theta_bias, rewards, env.total_reward , env.spc.gt_compare_solid()
+    return actions, images, env.theta_bias, rewards, env.total_reward , env.spc.gt_compare_solid(),env.num_steps
     #return [], images, env.theta_bias, [], env.total_reward , env.spc.gt_compare_solid()
 
 
 def test_policy(environment, models_path, models, policy, n_images, n_episodes, dest_path ):
-    data_template = {'actions':[],'images':[],'theta_biases':[],'rewards':[],'cum_rewards':[], 'gt_ratios':[], 'cum_reward_mean':0.0, 'cum_reward_std':0.0, 'gt_ratio_mean':0.0,'gt_ratio_std':0}
+    data_template = {'actions':[],'images':[],'theta_biases':[],'rewards':[],'cum_rewards':[], 'gt_ratios':[], 'num_steps':[], 'cum_reward_mean':0.0, 'cum_reward_std':0.0, 'gt_ratio_mean':0.0,'gt_ratio_std':0}
     collected_data = {}
 
     for p in models:
@@ -92,13 +92,14 @@ def test_policy(environment, models_path, models, policy, n_images, n_episodes, 
         data_holder = copy.deepcopy(data_template)
         
         for i in range(n_episodes):
-            actions, images, theta_bias, rewards, t_rwd, gt_ratio = run_episode(scan_env,tf_env,policy)
+            actions, images, theta_bias, rewards, t_rwd, gt_ratio, num_steps = run_episode(scan_env,tf_env,policy)
             data_holder['actions'].append(actions)
             data_holder['images'].append(images)
             data_holder['theta_biases'].append(theta_bias)
             data_holder['rewards'].append(rewards)
             data_holder['cum_rewards'].append(t_rwd)
             data_holder['gt_ratios'].append(gt_ratio)
+            data_holder['num_steps'].append(num_steps)
             
             print("\rplant-{} {}     ".format(p, i), end="")
 
@@ -110,8 +111,9 @@ def test_policy(environment, models_path, models, policy, n_images, n_episodes, 
 
         collected_data[p] = copy.deepcopy(data_holder)
 
-        print("\n{} rwd_mean {:.4f} rwd_std {:.4f} gt_ratio_mean {:.4f} gt_ratio_std {:.4f}".format(p,data_holder['cum_reward_mean'],data_holder['cum_reward_std'], \
-                                                                               data_holder['gt_ratio_mean'], data_holder['gt_ratio_std']) )
+        print("{} rwd_mean {:.4f} rwd_std {:.4f} gt_ratio_mean {:.4f} gt_ratio_std {:.4f} s{}".format(p,data_holder['cum_reward_mean'],data_holder['cum_reward_std'], \
+                                                                                                      data_holder['gt_ratio_mean'], data_holder['gt_ratio_std'],np.mean(data_holder['num_steps'])) )
+    print('----')
     if dest_path != "":
         f = open(dest_path,'w')
         json.dump(collected_data, f)
