@@ -77,16 +77,16 @@ from utils import policy_test
 
 
 current_path = os.getcwd()
-params_file = os.path.join(current_path, 'params_multi_state.json') 
+params_file = os.path.join(current_path, 'params.json') 
 pm=json.load(open(params_file))
-run_label = '208_multistate15im'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+run_label = '08-12-13-18_img_multi15im'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 data_log_path = os.path.join(current_path, 'generated_data/') 
 
 #save parameters and code used for this training
 with open(os.path.join(data_log_path,"parameters", run_label+'.json'), 'w') as json_file:
   json.dump(pm, json_file)
 
-src = os.path.join(current_path,"c_dqn_images.py")
+src = os.path.join(current_path,"c_dqn_images_multi_state.py")
 dst = os.path.join(data_log_path,"train_code", run_label+'.py')
 shutil.copyfile(src, dst)
 
@@ -102,16 +102,16 @@ models_path  = '/home/pico/uni/romi/scanner-gym_models_v3'
 '''train_models = ['207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d']'''
 #train_models = ['208_2d','209_2d', '212_2d','213_2d','217_2d','218_2d']
-train_models = ['208_2d']
+train_models = ['208_2d','212_2d','219_2d','221_2d','222_2d']#['208_2d','213_2d','215_2d','219_2d']
 n_images = 15
 continuous = False
 
 #scan_env = gym.make('ScannerEnv-v1', models_path=models_path, train_models=models,
 #                   n_images = n_images, continuous=continuous, gt_mode=True, cube_view='static')
 
-env = suite_gym.load('ScannerEnv-v3',gym_kwargs={'models_path':models_path, 'train_models':train_models,
+env = suite_gym.load('ScannerEnv-v2',gym_kwargs={'models_path':models_path, 'train_models':train_models,
                                                    'n_images':n_images, 'continuous':continuous,
-                                                   'gt_mode':True,'cube_view':'static'}) 
+                                                   'gt_mode':True,'cube_view':'static','multi_input':True}) 
 
 tf_env = tf_py_environment.TFPyEnvironment(env)
 
@@ -157,7 +157,7 @@ def image_layers():
     x = keras.layers.Flatten()(x)
     #x = keras.layers.GlobalAveragePooling3D()(x)
   
-    x = keras.layers.Dense(512)(x)
+    #x = keras.layers.Dense(512)(x)
                                         
     model = keras.models.Model(inputs=input_im,outputs=x)
     model.summary()
@@ -165,17 +165,17 @@ def image_layers():
     
 
 #scale range 0 to 1
-#oldmin = tf_env.observation_spec()[1].minimum
-#oldmax = tf_env.observation_spec()[1].maximum
+oldmin = tf_env.observation_spec()[1].minimum
+oldmax = tf_env.observation_spec()[1].maximum
 
-oldmin = tf_env.observation_spec().minimum
-oldmax = tf_env.observation_spec().maximum
-print(oldmax)
+#oldmin = tf_env.observation_spec().minimum
+#oldmax = tf_env.observation_spec().maximum
 
-#print(oldmin,oldmax)
+
+print(oldmin,oldmax)
     
 def input_vect_layers():
-    input_ = keras.layers.Input(shape=(7,))
+    input_ = keras.layers.Input(shape=(2,))
     preprocessing = keras.layers.Lambda(lambda x: ((x-oldmin)*(1.- 0.)/(oldmax-oldmin)) + 0. )(input_)
     #x = keras.layers.Dense(32)(preprocessing)
     return keras.models.Model(inputs=input_,outputs=preprocessing)
@@ -186,8 +186,8 @@ def input_vect_layers():
 
 #network
 #preprocessing_layers=image_layers()
-#preprocessing_layers=(image_layers(),input_vect_layers())
-preprocessing_layers=input_vect_layers()
+preprocessing_layers=(image_layers(),input_vect_layers())
+#preprocessing_layers=input_vect_layers()
 
 preprocessing_combiner = tf.keras.layers.Concatenate(axis=-1)
 dense_l = pm['model']['fc_layer_params']
@@ -201,7 +201,7 @@ categorical_q_net = categorical_q_network.CategoricalQNetwork(
 tf_env.observation_spec(),
 tf_env.action_spec(),
 preprocessing_layers=preprocessing_layers,
-#preprocessing_combiner=preprocessing_combiner,
+preprocessing_combiner=preprocessing_combiner,
 fc_layer_params=fc_layer_params,
 num_atoms=pm['categorical_dqn']['n_atoms'])
 
@@ -225,7 +225,7 @@ optimizer = keras.optimizers.Adam(learning_rate=pm['model']['learning_rate'])
 epsilon_fn = keras.optimizers.schedules.PolynomialDecay(
             initial_learning_rate=1.0, # initial ε
             decay_steps = pm['agent']['decay_steps'], 
-            end_learning_rate=0.05) # final ε
+            end_learning_rate=0.02) # final ε
 
 agent = categorical_dqn_agent.CategoricalDqnAgent(tf_env.time_step_spec(),
                 tf_env.action_spec(),
@@ -376,8 +376,7 @@ def train_agent(n_iterations):
 
         if iteration % 5000 == 0:
           test_models =train_models
-          test_data = os.path.join(data_log_path,"tests", run_label+'.json')
-          policy_test.test_policy(environment='ScannerEnv-v3', models_path=models_path,
+          policy_test.test_policy(environment='ScannerEnv-v2', models_path=models_path,
                                   models=test_models, policy=agent.policy,
                                   n_images=n_images, n_episodes = 50, dest_path="" )
 
@@ -426,11 +425,11 @@ tf_policy_saver.save(policy_dir)
 '''test_models = ['206_2d','207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d' ,'215_2d',
                '216_2d','217_2d','218_2d']'''
-test_models = ['208_2d','212_2d','213_2d_','218_2d']
+test_models = ['208_2d','212_2d','219_2d','221_2d','222_2d']
 test_data = os.path.join(data_log_path,"tests", run_label+'.json')
-policy_test.test_policy(environment='ScannerEnv-v3', models_path=models_path,
+policy_test.test_policy(environment='ScannerEnv-v2', models_path=models_path,
                         models=test_models, policy=agent.policy,
-                        n_images=n_images, n_episodes = 180, dest_path=test_data )
+                        n_images=n_images, n_episodes = 200, dest_path=test_data )
 
 stest = policy_test.run_episode(env, tf_env, agent.policy)
 for i in stest:
