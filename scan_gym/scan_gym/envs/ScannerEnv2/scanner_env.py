@@ -52,7 +52,7 @@ class ScannerEnv(gym.Env):
         last three images,
         the volume being carved , theta position , phi position'''
         # images
-        self.images_shape = (84,84,3)
+        self.images_shape = (128,128,3)
         self.img_obs_space = gym.spaces.Box(low=0, high=255, shape=self.images_shape, dtype=np.uint8)
         
         # volume used in the carving

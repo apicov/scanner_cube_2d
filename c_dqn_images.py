@@ -79,7 +79,7 @@ from utils import policy_test
 current_path = os.getcwd()
 params_file = os.path.join(current_path, 'params.json') 
 pm=json.load(open(params_file))
-run_label = '08-12-13-18_imgs_15im'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+run_label = '08-12-19-21-22_imgs_08im'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 data_log_path = os.path.join(current_path, 'generated_data/') 
 
 #save parameters and code used for this training
@@ -103,7 +103,7 @@ models_path  = '/home/pico/uni/romi/scanner-gym_models_v3'
                '211_2d','212_2d','213_2d' ,'214_2d']'''
 #train_models = ['208_2d','209_2d', '212_2d','213_2d','217_2d','218_2d']
 train_models = ['208_2d','212_2d','219_2d','221_2d','222_2d']#['208_2d','212_2d','213_2d_','218_2d']
-n_images = 16
+n_images = 8
 continuous = False
 
 #scan_env = gym.make('ScannerEnv-v1', models_path=models_path, train_models=models,
@@ -131,8 +131,8 @@ tf_env.action_spec()
 
 
 def image_layers():
-    input_im = keras.layers.Input(shape=(84,84,3))
-    preprocessing = keras.layers.Reshape((84,84,3,1))(input_im)
+    input_im = keras.layers.Input(shape=(128,128,3))
+    preprocessing = keras.layers.Reshape((128,128,3,1))(input_im)
     #input_vol = keras.layers.Input(shape=(128,128,128))
     #preprocessing = keras.layers.Reshape((128,128,128,1))(input_vol)
     preprocessing = keras.layers.Lambda(lambda x: (tf.cast(x,np.float32) / 255))(preprocessing) #normalize 0-1
