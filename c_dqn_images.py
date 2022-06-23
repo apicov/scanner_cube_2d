@@ -131,8 +131,8 @@ tf_env.action_spec()
 
 
 def image_layers():
-    input_im = keras.layers.Input(shape=(128,128,3))
-    preprocessing = keras.layers.Reshape((128,128,3,1))(input_im)
+    input_im = keras.layers.Input(shape=(84,84,3))
+    preprocessing = keras.layers.Reshape((84,84,3,1))(input_im)
     #input_vol = keras.layers.Input(shape=(128,128,128))
     #preprocessing = keras.layers.Reshape((128,128,128,1))(input_vol)
     preprocessing = keras.layers.Lambda(lambda x: (tf.cast(x,np.float32) / 255))(preprocessing) #normalize 0-1
