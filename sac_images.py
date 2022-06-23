@@ -75,7 +75,7 @@ seed=43
 tf.random.set_seed(seed)
 np.random.seed(seed)
 
-from utils import policy_test
+from utils import policy_test_sac
 
 tempdir = tempfile.gettempdir()
 import gym
@@ -235,7 +235,7 @@ actor_learning_rate = 3e-4 # @param {type:"number"}
 alpha_learning_rate = 3e-4 # @param {type:"number"}
 target_update_tau = 0.005 # @param {type:"number"}
 target_update_period = 1 # @param {type:"number"}
-gamma = 0.99 # @param {type:"number"}
+gamma = 0.7 # @param {type:"number"}
 reward_scale_factor = 1.0 # @param {type:"number"}
 
 log_interval = 5000 # @param {type:"integer"}
@@ -252,8 +252,8 @@ policy_save_interval = 5000 # @param {type:"integer"}
 models_path  = '/home/pico/uni/romi/scanner-gym_models_v2'
 '''train_models = ['207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d']'''
-train_models = ['212_2d'] 
-n_images = 10
+train_models =  ['208_2d','213_2d_','218_2d']
+n_images = 5
 continuous = True
 
 env_name = 'ScannerEnv-v2'
@@ -623,12 +623,12 @@ reverb_server.stop()
 
 # In[ ]:
 
-test_models = ['212_2d']
+test_models = ['208_2d','212_2d','213_2d_','218_2d']
 test_data = "tests_.json"
-policy_test.test_policy(environment='ScannerEnv-v2', models_path=models_path,
+policy_test_sac.test_policy(environment='ScannerEnv-v2', models_path=models_path,
                         models=test_models, policy=eval_policy,
-                        n_images=n_images, n_episodes = 180, dest_path=test_data )
-stest = policy_test.run_episode(eval_env, tf_eval_env,tf_eval_policy)
+                        n_images=n_images, n_episodes = 18, dest_path=test_data )
+stest = policy_test_sac.run_episode(eval_env, tf_eval_env,tf_eval_policy)
 
 
 # In[ ]:

@@ -79,7 +79,7 @@ from utils import policy_test
 current_path = os.getcwd()
 params_file = os.path.join(current_path, 'params.json') 
 pm=json.load(open(params_file))
-run_label = '08-12-13-18_img_multi05im'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+run_label = '08-12-13-18_img_multi15im'+datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 data_log_path = os.path.join(current_path, 'generated_data/') 
 
 #save parameters and code used for this training
@@ -102,8 +102,8 @@ models_path  = '/home/pico/uni/romi/scanner-gym_models_v3'
 '''train_models = ['207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d']'''
 #train_models = ['208_2d','209_2d', '212_2d','213_2d','217_2d','218_2d']
-train_models = ['208_2d','212_2d','213_2d_','218_2d']
-n_images = 5
+train_models = ['208_2d','213_2d','215_2d','219_2d']
+n_images = 15
 continuous = False
 
 #scan_env = gym.make('ScannerEnv-v1', models_path=models_path, train_models=models,
@@ -225,7 +225,7 @@ optimizer = keras.optimizers.Adam(learning_rate=pm['model']['learning_rate'])
 epsilon_fn = keras.optimizers.schedules.PolynomialDecay(
             initial_learning_rate=1.0, # initial ε
             decay_steps = pm['agent']['decay_steps'], 
-            end_learning_rate=0.05) # final ε
+            end_learning_rate=0.02) # final ε
 
 agent = categorical_dqn_agent.CategoricalDqnAgent(tf_env.time_step_spec(),
                 tf_env.action_spec(),
@@ -425,11 +425,11 @@ tf_policy_saver.save(policy_dir)
 '''test_models = ['206_2d','207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d' ,'215_2d',
                '216_2d','217_2d','218_2d']'''
-test_models = ['208_2d','212_2d','213_2d_','218_2d']
+test_models = ['208_2d','213_2d','215_2d','219_2d']
 test_data = os.path.join(data_log_path,"tests", run_label+'.json')
 policy_test.test_policy(environment='ScannerEnv-v2', models_path=models_path,
                         models=test_models, policy=agent.policy,
-                        n_images=n_images, n_episodes = 180, dest_path=test_data )
+                        n_images=n_images, n_episodes = 200, dest_path=test_data )
 
 stest = policy_test.run_episode(env, tf_env, agent.policy)
 for i in stest:

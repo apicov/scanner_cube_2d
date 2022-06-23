@@ -1,7 +1,7 @@
 {
- "agent": { "decay_steps": 80000, 
+ "agent": { "decay_steps": 450000, 
             "target_update_period": 1000 , 
-            "gamma": 0.9},
+            "gamma": 0.7},
 
  "rbuffer"   : {"max_length": 100000,
                 "sample_batch_size" : 64},
@@ -17,12 +17,12 @@
               "learning_rate" : 0.001
             },
             
- "misc" :  { "n_iterations" :  100000
+ "misc" :  { "n_iterations" :  500000
  		},
  	
     "categorical_dqn": { "n_atoms": 51,
-			"min_q_value": -0.5,
-			"max_q_value" : 0.5,
+			"min_q_value": 0,
+			"max_q_value" : 1,
 			"n_step_update" : 3
 		},
  		

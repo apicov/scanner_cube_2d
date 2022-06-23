@@ -102,7 +102,7 @@ models_path  = '/home/pico/uni/romi/scanner-gym_models_v3'
 '''train_models = ['207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d']'''
 #train_models = ['208_2d','209_2d', '212_2d','213_2d','217_2d','218_2d']
-train_models = ['208_2d','213_2d_','218_2d']
+train_models = ['220_2d']# ['208_2d','213_2d_','218_2d']
 n_images = 5
 continuous = False
 
@@ -425,7 +425,7 @@ tf_policy_saver.save(policy_dir)
 '''test_models = ['206_2d','207_2d','208_2d','209_2d', '210_2d',
                '211_2d','212_2d','213_2d' ,'214_2d' ,'215_2d',
                '216_2d','217_2d','218_2d']'''
-test_models = ['208_2d','212_2d','213_2d_','218_2d']
+test_models = ['220_2d','208_2d','212_2d','213_2d_','218_2d']
 test_data = os.path.join(data_log_path,"tests", run_label+'.json')
 policy_test.test_policy(environment='ScannerEnv-v4', models_path=models_path,
                         models=test_models, policy=agent.policy,

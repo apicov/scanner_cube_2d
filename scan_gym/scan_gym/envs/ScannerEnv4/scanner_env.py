@@ -250,7 +250,7 @@ class ScannerEnv(gym.Env):
         self.reset()
         
         
-    def reset(self,theta_init=-1,phi_init=-1,theta_bias=0):
+    def reset(self,theta_init=-1,phi_init=0,theta_bias=0):
         self.gano = False
         self.num_steps = 0
         self.total_reward = 0
@@ -430,7 +430,7 @@ class ScannerEnv(gym.Env):
         #self.es_similarity.append( self.spc.gt_compare_empty_voxels())
         self.solid_similarities.append(self.spc.gt_compare_solid())
 
-        reward = -0.005
+        reward = -0.01
         # self.solid_similarities[-1] -  self.solid_similarities[-2]
         #reward = 0 #  self.es_similarity[-1] - self.es_similarity[-2]
 
@@ -474,13 +474,10 @@ class ScannerEnv(gym.Env):
         '''
 
         
-        if self.num_steps > 100:
+        if self.num_steps > 100 or  self.solid_similarities[-1] >= 0.7:
             self.done = True
-        else:
-            if self.solid_similarities[-1] >= 0.8 :
-                reward += 0.5
-                self.done = True
-           
+
+            
         self.total_reward += reward
 
 
